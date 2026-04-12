@@ -1,5 +1,6 @@
 # apps/main_app.py
 import streamlit as st
+import streamlit.components.v1 as components
 import sys
 import os
 
@@ -9,6 +10,7 @@ sys.path.append(project_root)
 
 from modules.cad_engine.parser import extract_bom_from_step
 from modules.digital_thread.data_manager import get_digital_thread_data
+from modules.graph_engine.visualizer import generate_knowledge_graph
 
 # 페이지 대시보드 설정
 st.set_page_config(page_title="NexGen Ship PLM", layout="wide")
@@ -39,8 +41,8 @@ if menu == "Visual BOM Engine":
     with col2:
         st.write("### 🎨 Visual Preview")
         st.info("3D 렌더링 모듈 준비 중입니다.")
-        
-elif menu == "2. Digital Thread Mapper":
+
+elif menu == "Digital Thread":
     st.header("🔗 Digital Thread Mapper")
     st.markdown("##### 통합 데이터 흐름: Spec ➔ Purchase ➔ Design ➔ Production")
     
@@ -63,3 +65,26 @@ elif menu == "2. Digital Thread Mapper":
     st.write("### 📊 Master Thread Table")
     st.dataframe(thread_data, use_container_width=True)
 
+elif menu == "Knowledge Graph":
+    st.header("🧠 Knowledge Graph & Semantic Search")
+    st.write("TAG 기반 온톨로지 시각화 및 데이터 간 관계 분석")
+    
+    # Digital Thread 데이터 가져오기
+    thread_data = get_digital_thread_data()
+    
+    col1, col2 = st.columns([3, 1])
+    
+    with col1:
+        st.write("### 🌐 Semantic Network View")
+        # 그래프 생성 및 렌더링
+        graph_html = generate_knowledge_graph(thread_data)
+        components.html(graph_html, height=550)
+        
+    with col2:
+        st.write("### 🔍 AI Insights (RAG)")
+        st.text_input("질문을 입력하세요 (예: 특정 태그의 선급 규칙은?)")
+        st.info("LLM 연동을 통해 그래프 내 데이터를 기반으로 답변을 생성합니다.")
+        
+        st.write("#### 연관 데이터")
+        st.caption("- Class Rule: DNV-RU-SHIP Pt.3")
+        st.caption("- Material Cert: EN 10204 3.1")
