@@ -11,6 +11,7 @@ sys.path.append(project_root)
 from modules.cad_engine.parser import extract_bom_from_step
 from modules.digital_thread.data_manager import get_digital_thread_data
 from modules.graph_engine.visualizer import generate_knowledge_graph
+from modules.revision_manager.history import get_revision_history
 
 # 페이지 대시보드 설정
 st.set_page_config(page_title="NexGen Ship PLM", layout="wide")
@@ -19,7 +20,7 @@ st.title("🚢 Next-Gen Shipbuilding PLM Platform")
 
 # 사이드바 메뉴
 st.sidebar.header("Control Panel")
-menu = st.sidebar.radio("Navigation", ["Visual BOM Engine", "Digital Thread", "Knowledge Graph"])
+menu = st.sidebar.radio("Navigation", ["Visual BOM Engine", "Digital Thread", "Knowledge Graph", "Revision Manager"])
 
 if menu == "Visual BOM Engine":
     st.subheader("BOM Extraction from CAD Data")
@@ -88,3 +89,37 @@ elif menu == "Knowledge Graph":
         st.write("#### 연관 데이터")
         st.caption("- Class Rule: DNV-RU-SHIP Pt.3")
         st.caption("- Material Cert: EN 10204 3.1")
+
+elif menu == "Revision Manager":
+    st.header("📑 Intelligent Revision Manager")
+    st.write("아이템별 설계 변경 이력 및 리비전 제어")
+    
+    # 리비전 데이터 로드
+    rev_history = get_revision_history()
+    
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        st.write("### 🔍 Item Selection")
+        selected_item = st.selectbox("대상 아이템 선택", ["H-F10-P01 (Ballast Pipe)", "H-F10-V02 (Gate Valve)"])
+        st.info(f"선택된 아이템: {selected_item}")
+        
+        # 현재 상태 표시
+        st.success("Current Status: Released (Rev.P02)")
+        
+    with col2:
+        st.write("### 📜 Change Log History")
+        
+        # 타임라인 스타일로 히스토리 표시
+        for rev in reversed(rev_history):
+            with st.container():
+                st.markdown(f"**Revision: {rev['Revision']}** ({rev['Date']})")
+                st.write(f"- **Author:** {rev['Author']}")
+                st.write(f"- **Description:** {rev['Change_Log']}")
+                st.divider()
+
+    # 리비전 비교 기능 (가상)
+    st.write("### 🔄 Revision Comparison")
+    c1, c2 = st.columns(2)
+    c1.json(rev_history[0]) # Rev.P01
+    c2.json(rev_history[1]) # Rev.P02
