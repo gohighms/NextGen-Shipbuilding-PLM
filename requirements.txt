@@ -1,0 +1,16 @@
+# --- Core Framework ---
+streamlit==1.32.0
+
+# --- CAD & Data Processing ---
+numpy
+pandas
+trimesh
+
+# --- Graph & AI ---
+networkx
+pyvis
+langchain
+openai
+
+# --- Utility ---
+python-dotenv
