@@ -1,0 +1,85 @@
+{
+  "registry_id": "TAG-20260413-202217",
+  "saved_at": "2026-04-13 20:22:17",
+  "source_type": "saved_spec",
+  "source_name": "Container 15000TEU Hull 001",
+  "tag_count": 9,
+  "attributes": {
+    "basic_info": {
+      "yard": "Samsung Heavy Industries",
+      "ship_type": "CONTAINER",
+      "bay_plan_type": "Wide Beam"
+    },
+    "principal_dimensions": {
+      "loa_m": 366.0,
+      "breadth_m": 51.0,
+      "draft_m": 15.0
+    },
+    "performance": {
+      "service_speed_kn": 22.0
+    },
+    "machinery": {
+      "main_engine": "WinGD",
+      "propulsion_type": "Diesel"
+    },
+    "cargo_system": {
+      "capacity_teu": 15000
+    }
+  },
+  "tags": [
+    {
+      "section": "basic_info",
+      "field_name": "basic_info.bay_plan_type",
+      "value": "Wide Beam",
+      "tag_name": "SB-BAS-BAYPLAN-WIDE-BEAM"
+    },
+    {
+      "section": "basic_info",
+      "field_name": "basic_info.ship_type",
+      "value": "CONTAINER",
+      "tag_name": "SB-BAS-SHIPTYPE-CONTAINER"
+    },
+    {
+      "section": "basic_info",
+      "field_name": "basic_info.yard",
+      "value": "Samsung Heavy Industries",
+      "tag_name": "SB-BAS-YARD-SAMSUNG-HEAVY-INDUSTRIES"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.capacity_teu",
+      "value": 15000,
+      "tag_name": "SB-CGO-TEU-15000"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.breadth_m",
+      "value": 51.0,
+      "tag_name": "SB-DIM-BREADTH-51-0"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.draft_m",
+      "value": 15.0,
+      "tag_name": "SB-DIM-DRAFT-15-0"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.loa_m",
+      "value": 366.0,
+      "tag_name": "SB-DIM-LOA-366-0"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "WinGD",
+      "tag_name": "SB-MAC-MENG-WINGD"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.propulsion_type",
+      "value": "Diesel",
+      "tag_name": "SB-MAC-PROP-DIESEL"
+    }
+  ]
+}

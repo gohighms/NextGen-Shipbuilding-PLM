@@ -1,0 +1,64 @@
+{
+  "registry_id": "TAG-20260413-201809",
+  "saved_at": "2026-04-13 20:18:09",
+  "source_type": "manual_input",
+  "source_name": "직접 입력",
+  "tag_count": 6,
+  "attributes": {
+    "basic_info": {
+      "ship_type_hint": "LNGC"
+    },
+    "principal_dimensions": {
+      "loa_m": 299.0,
+      "breadth_m": 46.4,
+      "draft_m": 11.5
+    },
+    "performance": {
+      "service_speed_kn": 19.5
+    },
+    "cargo_system": {
+      "cargo_capacity_m3": 241000
+    },
+    "machinery": {
+      "main_engine": "ME-GI"
+    }
+  },
+  "tags": [
+    {
+      "section": "basic_info",
+      "field_name": "basic_info.ship_type_hint",
+      "value": "LNGC",
+      "tag_name": "SB-BAS-SHIPTYPE-LNGC"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.cargo_capacity_m3",
+      "value": 241000,
+      "tag_name": "SB-CGO-CAPA-241000"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.breadth_m",
+      "value": 46.4,
+      "tag_name": "SB-DIM-BREADTH-46-4"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.draft_m",
+      "value": 11.5,
+      "tag_name": "SB-DIM-DRAFT-11-5"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.loa_m",
+      "value": 299.0,
+      "tag_name": "SB-DIM-LOA-299-0"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-MENG-ME-GI"
+    }
+  ]
+}

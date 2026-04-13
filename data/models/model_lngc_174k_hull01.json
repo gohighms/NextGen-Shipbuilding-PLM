@@ -1,0 +1,25 @@
+{
+  "model_id": "MODEL-LNGC-174K-001",
+  "title": "LNGC 174K Hull Model",
+  "discipline": "선체/기관/화물 통합",
+  "tags": [
+    "SB-BAS-SHIPTYPE-LNGC",
+    "SB-DIM-LOA-290-0",
+    "SB-DIM-BREADTH-45-8",
+    "SB-DIM-DRAFT-11-2",
+    "SB-MAC-MENG-X-DF",
+    "SB-CGO-CAPA-174000"
+  ],
+  "document_text": "EDIT DESIGN MODEL / EBOM SUMMARY\n\nModel ID   : MODEL-LNGC-174K-001\nTitle      : LNGC 174K Hull Model\nDiscipline : 선체/기관/화물 통합\n\n1. Model Overview\nThis model summary defines the reusable engineering basis and EBOM scope for the 174K LNG carrier.\n\n2. EBOM Items\n- HULL-BLOCK-A01 / Hull block assembly / Qty 12\n- ENG-XDF-01 / Main engine package X-DF / Qty 1\n- CARGO-TANK-NO96 / Cargo tank system NO96 / Qty 4\n- CARGO-PUMP-01 / Cargo pump set / Qty 2\n\n3. Design Notes\n- Existing hull form reused for edit design baseline.\n- Engine room arrangement based on X-DF package.\n- Cargo handling model aligned with 174K capacity.",
+  "ebom_items": [
+    {"item_code": "HULL-BLOCK-A01", "description": "Hull block assembly", "quantity": 12},
+    {"item_code": "ENG-XDF-01", "description": "Main engine package X-DF", "quantity": 1},
+    {"item_code": "CARGO-TANK-NO96", "description": "Cargo tank system NO96", "quantity": 4},
+    {"item_code": "CARGO-PUMP-01", "description": "Cargo pump set", "quantity": 2}
+  ],
+  "model_notes": [
+    "Existing hull form reused for edit design baseline.",
+    "Engine room arrangement based on X-DF package.",
+    "Cargo handling model aligned with 174K capacity."
+  ]
+}

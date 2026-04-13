@@ -1,9 +1,9 @@
 ## NextGen Shipbuilding PLM
 
-이 저장소는 여러 PLM 기능을 단계적으로 붙여갈 수 있도록 기본 구조를 먼저 정리한 상태입니다.
-현재 첫 기능으로 건조사양서 유사 검색 및 비교 화면이 들어가 있습니다.
+This repository is set up so multiple PLM features can be added over time.
+The first feature in place is a shipbuilding specification search and comparison screen.
 
-### 프로젝트 구조
+### Project layout
 
 ```text
 .
@@ -22,6 +22,7 @@
 |   |-- common/
 |   |   `-- paths.py
 |   `-- features/
+|   `-- features/
 |       `-- spec_search/
 |           |-- compare.py
 |           |-- models.py
@@ -34,26 +35,26 @@
 `-- requirements.txt
 ```
 
-### 구조를 이렇게 잡은 이유
+### Why this layout
 
-- `apps/`는 실행 진입점만 둡니다.
-- `src/common/`에는 여러 기능이 같이 쓰는 경로, 설정, 공통 유틸을 둡니다.
-- `src/features/` 아래에 기능별 코드를 나눕니다.
-- 새 기능이 생기면 `src/features/기능명/`만 추가하면 됩니다.
+- `apps/` keeps app entrypoints only.
+- `src/common/` is for shared paths, settings, and helpers.
+- `src/features/` is where feature-specific code lives.
+- New PLM functions can be added as another feature folder.
 
-예를 들면 앞으로 이런 식으로 늘릴 수 있습니다.
+Possible future feature folders:
 
 - `src/features/spec_search/`
 - `src/features/bom_review/`
 - `src/features/change_impact/`
 - `src/features/document_parser/`
 
-### 현재 들어간 기능
+### Current feature
 
-- 저장된 사양서 JSON 조회
-- 입력 텍스트 기반 유사도 계산
-- 주요 속성 비교
-- Streamlit 화면에서 결과 확인
+- Read saved spec JSON files
+- Calculate simple text similarity
+- Compare major attributes
+- Review results in Streamlit
 
 ### 실행
 
@@ -61,8 +62,8 @@
 streamlit run apps/main_app.py
 ```
 
-### 다음 작업 추천
+### Suggested next steps
 
-1. 실제 건조사양서 샘플을 더 추가해 비교 정확도를 높입니다.
-2. 비교 기준이 되는 공통 항목 체계를 정의합니다.
-3. 텍스트 유사도에서 항목 기반 비교로 점진적으로 옮겨갑니다.
+1. Add at least three real sample specifications in the same format
+2. Define the standard field list to compare
+3. Move from raw text matching to field-based comparison

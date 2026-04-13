@@ -1,0 +1,20 @@
+{
+  "pos_id": "POS-CNTR-15000TEU-001",
+  "title": "Container 15000TEU 기본 POS",
+  "department": "상선설계팀",
+  "document_text": "PURCHASE ORDER SPECIFICATION\n\nDocument ID : POS-CNTR-15000TEU-001\nTitle       : Container 15000TEU 기본 POS\nDepartment  : 상선설계팀\n\n1. General\nThis specification defines the purchase basis for the 15,000 TEU container carrier package.\n\n2. 주요치수\nLOA 366.0 m / Breadth 51.0 m / Draft 15.0 m\n\n3. 기관\nWinGD 주기관 기준 기관부 설계와 공급 범위를 정의한다.\n\n4. 화물시스템\n컨테이너 적재 계획과 베이 운영 기준을 정의한다.",
+  "tags": [
+    "SB-BAS-SHIPTYPE-CONTAINER",
+    "SB-DIM-LOA-366-0",
+    "SB-DIM-BREADTH-51-0",
+    "SB-DIM-DRAFT-15-0",
+    "SB-MAC-MENG-WINGD",
+    "SB-CGO-TEU-15000"
+  ],
+  "sections": [
+    {"section": "일반", "content": "15,000 TEU 컨테이너선 기본 계획 조건"},
+    {"section": "주요치수", "content": "LOA 366.0 m / Breadth 51.0 m / Draft 15.0 m"},
+    {"section": "기관", "content": "WinGD 주기관 기준 기관부 설계"},
+    {"section": "화물시스템", "content": "컨테이너 적재 계획 및 베이 운영 기준"}
+  ]
+}

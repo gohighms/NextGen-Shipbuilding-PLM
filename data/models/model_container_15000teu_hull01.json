@@ -1,0 +1,25 @@
+{
+  "model_id": "MODEL-CNTR-15000TEU-001",
+  "title": "Container 15000TEU Model",
+  "discipline": "선체/의장 통합",
+  "tags": [
+    "SB-BAS-SHIPTYPE-CONTAINER",
+    "SB-DIM-LOA-366-0",
+    "SB-DIM-BREADTH-51-0",
+    "SB-DIM-DRAFT-15-0",
+    "SB-MAC-MENG-WINGD",
+    "SB-CGO-TEU-15000"
+  ],
+  "document_text": "EDIT DESIGN MODEL / EBOM SUMMARY\n\nModel ID   : MODEL-CNTR-15000TEU-001\nTitle      : Container 15000TEU Model\nDiscipline : 선체/의장 통합\n\n1. Model Overview\nThis model summary defines the reusable engineering basis and EBOM scope for the 15,000 TEU container carrier.\n\n2. EBOM Items\n- HULL-BLOCK-C01 / Hull block assembly / Qty 18\n- ENG-WINGD-01 / Main engine package WinGD / Qty 1\n- DECK-CELLGUIDE-01 / Deck cell guide set / Qty 24\n- LASHING-BRIDGE-01 / Lashing bridge set / Qty 8\n\n3. Design Notes\n- Existing container carrier hull model reused.\n- Main engine arrangement follows WinGD package.\n- Cargo outfitting focused on container deck arrangement.",
+  "ebom_items": [
+    {"item_code": "HULL-BLOCK-C01", "description": "Hull block assembly", "quantity": 18},
+    {"item_code": "ENG-WINGD-01", "description": "Main engine package WinGD", "quantity": 1},
+    {"item_code": "DECK-CELLGUIDE-01", "description": "Deck cell guide set", "quantity": 24},
+    {"item_code": "LASHING-BRIDGE-01", "description": "Lashing bridge set", "quantity": 8}
+  ],
+  "model_notes": [
+    "Existing container carrier hull model reused.",
+    "Main engine arrangement follows WinGD package.",
+    "Cargo outfitting focused on container deck arrangement."
+  ]
+}

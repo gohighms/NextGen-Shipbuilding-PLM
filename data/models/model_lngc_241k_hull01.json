@@ -1,0 +1,25 @@
+{
+  "model_id": "MODEL-LNGC-241K-001",
+  "title": "LNGC 241K Hull Model",
+  "discipline": "선체/기관/화물 통합",
+  "tags": [
+    "SB-BAS-SHIPTYPE-LNGC",
+    "SB-DIM-LOA-299-0",
+    "SB-DIM-BREADTH-46-4",
+    "SB-DIM-DRAFT-11-5",
+    "SB-MAC-MENG-ME-GI",
+    "SB-CGO-CAPA-241000"
+  ],
+  "document_text": "EDIT DESIGN MODEL / EBOM SUMMARY\n\nModel ID   : MODEL-LNGC-241K-001\nTitle      : LNGC 241K Hull Model\nDiscipline : 선체/기관/화물 통합\n\n1. Model Overview\nThis model summary defines the reusable engineering basis and EBOM scope for the 241K LNG carrier.\n\n2. EBOM Items\n- HULL-BLOCK-B01 / Hull block assembly / Qty 14\n- ENG-MEGI-01 / Main engine package ME-GI / Qty 1\n- CARGO-TANK-MK3 / Cargo tank system Mark III Flex / Qty 4\n- CARGO-PUMP-02 / Cargo pump set / Qty 2\n\n3. Design Notes\n- Existing 241K hull model reused for edit design baseline.\n- Main engine arrangement based on ME-GI package.\n- Cargo handling and tank system aligned with 241K capacity.",
+  "ebom_items": [
+    {"item_code": "HULL-BLOCK-B01", "description": "Hull block assembly", "quantity": 14},
+    {"item_code": "ENG-MEGI-01", "description": "Main engine package ME-GI", "quantity": 1},
+    {"item_code": "CARGO-TANK-MK3", "description": "Cargo tank system Mark III Flex", "quantity": 4},
+    {"item_code": "CARGO-PUMP-02", "description": "Cargo pump set", "quantity": 2}
+  ],
+  "model_notes": [
+    "Existing 241K hull model reused for edit design baseline.",
+    "Main engine arrangement based on ME-GI package.",
+    "Cargo handling and tank system aligned with 241K capacity."
+  ]
+}

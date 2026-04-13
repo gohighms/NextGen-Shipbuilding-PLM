@@ -1,0 +1,20 @@
+{
+  "pos_id": "POS-LNGC-241K-001",
+  "title": "LNGC 241K 기본 POS",
+  "department": "기본설계팀",
+  "document_text": "PURCHASE ORDER SPECIFICATION\n\nDocument ID : POS-LNGC-241K-001\nTitle       : LNGC 241K 기본 POS\nDepartment  : 기본설계팀\n\n1. General\nThis specification defines the purchase basis for the 241K LNG carrier package.\n\n2. 주요치수\nLOA 299.0 m / Breadth 46.4 m / Draft 11.5 m\n\n3. 기관\nME-GI 기준 추진 시스템 및 기관부 사양을 정의한다.\n\n4. 화물시스템\n241,000 cbm 및 GTT 계열 화물창 시스템 기준을 적용한다.",
+  "tags": [
+    "SB-BAS-SHIPTYPE-LNGC",
+    "SB-DIM-LOA-299-0",
+    "SB-DIM-BREADTH-46-4",
+    "SB-DIM-DRAFT-11-5",
+    "SB-MAC-MENG-ME-GI",
+    "SB-CGO-CAPA-241000"
+  ],
+  "sections": [
+    {"section": "일반", "content": "241K LNG 운반선 기본 사양 및 성능 목표 반영"},
+    {"section": "주요치수", "content": "LOA 299.0 m / Breadth 46.4 m / Draft 11.5 m"},
+    {"section": "기관", "content": "ME-GI 기준 추진 시스템 및 기관부 사양 정리"},
+    {"section": "화물시스템", "content": "241,000 cbm 및 GTT 계열 화물창 시스템 기준 적용"}
+  ]
+}
