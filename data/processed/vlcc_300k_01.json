@@ -1,0 +1,28 @@
+{
+  "spec_id": "VLCC-300K-001",
+  "project_name": "VLCC 300K Hull 001",
+  "ship_type": "VLCC",
+  "text": "Crude oil tanker VLCC, 300,000 DWT, main engine MAN B&W, service speed 15.5 knots, LOA 333.0 m, Breadth 60.0 m, Draft 21.5 m.",
+  "attributes": {
+    "basic_info": {
+      "yard": "Hanwha Ocean",
+      "ship_type": "VLCC",
+      "cargo_tank_count": 15
+    },
+    "principal_dimensions": {
+      "loa_m": 333.0,
+      "breadth_m": 60.0,
+      "draft_m": 21.5
+    },
+    "performance": {
+      "service_speed_kn": 15.5
+    },
+    "machinery": {
+      "main_engine": "MAN B&W",
+      "propulsion_type": "Diesel"
+    },
+    "cargo_system": {
+      "deadweight_ton": 300000
+    }
+  }
+}

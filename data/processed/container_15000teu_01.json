@@ -1,0 +1,28 @@
+{
+  "spec_id": "CNTR-15000TEU-001",
+  "project_name": "Container 15000TEU Hull 001",
+  "ship_type": "CONTAINER",
+  "text": "Container carrier, 15,000 TEU, main engine WinGD, service speed 22.0 knots, LOA 366.0 m, Breadth 51.0 m, Draft 15.0 m.",
+  "attributes": {
+    "basic_info": {
+      "yard": "Samsung Heavy Industries",
+      "ship_type": "CONTAINER",
+      "bay_plan_type": "Wide Beam"
+    },
+    "principal_dimensions": {
+      "loa_m": 366.0,
+      "breadth_m": 51.0,
+      "draft_m": 15.0
+    },
+    "performance": {
+      "service_speed_kn": 22.0
+    },
+    "machinery": {
+      "main_engine": "WinGD",
+      "propulsion_type": "Diesel"
+    },
+    "cargo_system": {
+      "capacity_teu": 15000
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "spec_id": "LNGC-174K-001",
+  "project_name": "LNGC 174K Hull 001",
+  "ship_type": "LNGC",
+  "text": "LNG 운반선, cargo capacity 174,000 cbm, main engine X-DF, service speed 19.0 knots, LOA 290.0 m, Breadth 45.8 m, Draft 11.2 m, cargo tank GTT NO96.",
+  "attributes": {
+    "basic_info": {
+      "yard": "HD Hyundai Heavy Industries",
+      "ship_type": "LNGC",
+      "cargo_tank_count": 4
+    },
+    "principal_dimensions": {
+      "loa_m": 290.0,
+      "breadth_m": 45.8,
+      "draft_m": 11.2
+    },
+    "performance": {
+      "service_speed_kn": 19.0
+    },
+    "machinery": {
+      "main_engine": "X-DF",
+      "propulsion_type": "Dual Fuel"
+    },
+    "cargo_system": {
+      "cargo_capacity_m3": 174000,
+      "cargo_tank_system": "GTT NO96"
+    }
+  }
+}

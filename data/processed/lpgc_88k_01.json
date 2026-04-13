@@ -1,0 +1,29 @@
+{
+  "spec_id": "LPGC-88K-001",
+  "project_name": "LPGC 88K Hull 001",
+  "ship_type": "LPGC",
+  "text": "LPG 운반선, cargo capacity 88,000 cbm, main engine MAN B&W, service speed 16.8 knots, LOA 230.0 m, Breadth 36.6 m, Draft 11.0 m, cargo tank Type A.",
+  "attributes": {
+    "basic_info": {
+      "yard": "HD Hyundai Samho",
+      "ship_type": "LPGC",
+      "cargo_tank_count": 2
+    },
+    "principal_dimensions": {
+      "loa_m": 230.0,
+      "breadth_m": 36.6,
+      "draft_m": 11.0
+    },
+    "performance": {
+      "service_speed_kn": 16.8
+    },
+    "machinery": {
+      "main_engine": "MAN B&W",
+      "propulsion_type": "Diesel"
+    },
+    "cargo_system": {
+      "cargo_capacity_m3": 88000,
+      "cargo_tank_system": "Type A"
+    }
+  }
+}
