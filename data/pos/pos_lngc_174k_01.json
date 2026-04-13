@@ -1,20 +1,43 @@
 {
-  "pos_id": "POS-LNGC-174K-001",
-  "title": "LNGC 174K 기본 POS",
-  "department": "기본설계팀",
-  "document_text": "PURCHASE ORDER SPECIFICATION\n\nDocument ID : POS-LNGC-174K-001\nTitle       : LNGC 174K 기본 POS\nDepartment  : 기본설계팀\n\n1. General\nThis specification defines the basic purchase requirement for the 174K LNG carrier package.\n\n2. 주요치수\nLOA 290.0 m / Breadth 45.8 m / Draft 11.2 m\n\n3. 기관\n주기관 X-DF 기준의 기관실 배치 및 관련 공급 범위를 정의한다.\n\n4. 화물시스템\n174,000 cbm 기준 화물창 및 처리 시스템 설계 조건을 정의한다.",
-  "tags": [
-    "SB-BAS-SHIPTYPE-LNGC",
-    "SB-DIM-LOA-290-0",
-    "SB-DIM-BREADTH-45-8",
-    "SB-DIM-DRAFT-11-2",
-    "SB-MAC-MENG-X-DF",
-    "SB-CGO-CAPA-174000"
-  ],
+  "pos_id": "POS-HD1002-001",
+  "source_spec_id": "LNGC-174K-001",
+  "source_project_name": "HD1002",
+  "title": "HD1002 POS",
+  "department": "영업설계팀",
+  "reference_attributes": {
+    "basic_info": {
+      "ship_type": "LNGC"
+    },
+    "principal_dimensions": {
+      "loa_m": 290.0,
+      "breadth_m": 45.8,
+      "draft_m": 11.2
+    },
+    "machinery": {
+      "main_engine": "X-DF"
+    },
+    "cargo_system": {
+      "cargo_capacity_m3": 174000,
+      "cargo_tank_system": "GTT NO96"
+    }
+  },
+  "document_text": "PURCHASE ORDER SPECIFICATION\n\nDocument ID : POS-HD1002-001\nTitle       : HD1002 POS\nDepartment  : 영업설계팀\n\n1. General\nThis specification defines the basic purchase requirement for the 174K LNG carrier package.\n\n2. 주요치수\nLOA 290.0 m / Breadth 45.8 m / Draft 11.2 m\n\n3. 기관\nX-DF 기준 기관부 공급 범위와 배치 조건을 정의한다.\n\n4. 화물시스템\n174,000 cbm 및 GTT NO96 기준 화물창 시스템 요구사항을 정의한다.",
   "sections": [
-    {"section": "일반", "content": "174K LNG 운반선 기본 계획 기준 적용"},
-    {"section": "주요치수", "content": "LOA 290.0 m / Breadth 45.8 m / Draft 11.2 m"},
-    {"section": "기관", "content": "주기관 X-DF 기준의 기관실 배치 검토"},
-    {"section": "화물시스템", "content": "174,000 cbm 기준 화물창 및 처리 시스템 설계"}
+    {
+      "section": "일반",
+      "content": "174K LNG 운반선의 구매 사양 기준과 적용 범위를 정의한다."
+    },
+    {
+      "section": "주요치수",
+      "content": "LOA 290.0 m / Breadth 45.8 m / Draft 11.2 m"
+    },
+    {
+      "section": "기관",
+      "content": "X-DF 기준 기관부 공급 범위와 배치 조건을 정리한다."
+    },
+    {
+      "section": "화물시스템",
+      "content": "174,000 cbm 및 GTT NO96 기준 화물창 시스템 요구사항을 정리한다."
+    }
   ]
 }

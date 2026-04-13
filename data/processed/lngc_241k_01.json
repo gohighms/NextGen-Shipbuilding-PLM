@@ -1,11 +1,11 @@
 {
   "spec_id": "LNGC-241K-001",
-  "project_name": "LNGC 241K Hull 001",
+  "project_name": "HD1001",
   "ship_type": "LNGC",
   "text": "LNG 운반선, cargo capacity 241,000 cbm, main engine ME-GI, service speed 19.5 knots, LOA 299.0 m, Breadth 46.4 m, Draft 11.5 m, cargo tank GTT Mark III Flex.",
   "attributes": {
     "basic_info": {
-      "yard": "Hanwha Ocean",
+      "yard": "HD Hyundai Heavy Industries",
       "ship_type": "LNGC",
       "cargo_tank_count": 4
     },

@@ -1,64 +1,57 @@
 from src.features.pos_generation.draft_repository import PosDraftRepository
-from src.features.pos_generation.service import build_pos_document_text, build_pos_draft, recommend_pos_documents
+from src.features.pos_generation.service import (
+    build_pos_document_text,
+    build_pos_draft,
+    find_pos_documents_for_project,
+)
 
 
-def test_recommend_pos_documents_prefers_more_matching_tags() -> None:
-    registry_item = {
-        "tags": [
-            {"tag_name": "SB-BAS-SHIPTYPE-LNGC"},
-            {"tag_name": "SB-DIM-LOA-299-0"},
-            {"tag_name": "SB-MAC-MENG-ME-GI"},
-        ]
-    }
+def test_find_pos_documents_for_project_filters_by_selected_project() -> None:
+    selected_project = {"spec_id": "LNGC-241K-001"}
     pos_items = [
-        {
-            "pos_id": "POS-1",
-            "title": "A",
-            "department": "기본설계팀",
-            "tags": ["SB-BAS-SHIPTYPE-LNGC", "SB-DIM-LOA-299-0", "SB-MAC-MENG-ME-GI"],
-            "sections": [],
-        },
-        {
-            "pos_id": "POS-2",
-            "title": "B",
-            "department": "기본설계팀",
-            "tags": ["SB-BAS-SHIPTYPE-LNGC"],
-            "sections": [],
-        },
+        {"pos_id": "POS-1", "source_spec_id": "LNGC-241K-001"},
+        {"pos_id": "POS-2", "source_spec_id": "LNGC-174K-001"},
     ]
 
-    result = recommend_pos_documents(registry_item, pos_items, top_k=2)
+    result = find_pos_documents_for_project(selected_project, pos_items)
 
-    assert result[0]["pos_id"] == "POS-1"
-    assert result[0]["score"] == 3
+    assert [item["pos_id"] for item in result] == ["POS-1"]
 
 
 def test_build_pos_draft_copies_core_fields() -> None:
-    registry_item = {"registry_id": "TAG-001", "source_name": "LNGC 241K"}
+    current_spec = {
+        "project_name": "HD9001",
+        "attributes": {"machinery": {"main_engine": "ME-GI"}},
+    }
+    selected_project = {
+        "spec_id": "LNGC-241K-001",
+        "project_name": "HD1001",
+    }
     pos_item = {
         "pos_id": "POS-001",
         "title": "기존 POS",
-        "department": "기본설계팀",
+        "department": "영업설계팀",
         "sections": [{"section": "기관", "content": "기존 내용"}],
     }
 
-    draft = build_pos_draft(registry_item, pos_item)
+    draft = build_pos_draft(current_spec, selected_project, pos_item)
 
-    assert draft["new_pos_id"] == "TAG-001-POS-DRAFT"
+    assert draft["new_pos_id"] == "POS-HD9001-001"
     assert draft["based_on_pos_id"] == "POS-001"
-    assert draft["title"] == "기존 POS - 수정 초안"
+    assert draft["title"] == "HD9001 POS 편집 초안"
+    assert draft["current_project_attributes"] == {"machinery": {"main_engine": "ME-GI"}}
 
 
 def test_pos_draft_repository_saves_and_lists_items(tmp_path) -> None:
     repository = PosDraftRepository(tmp_path)
     draft = {
-        "new_pos_id": "TAG-001-POS-DRAFT",
-        "source_registry_id": "TAG-001",
-        "source_name": "LNGC 241K",
+        "new_pos_id": "POS-HD9001-001",
+        "source_project_spec_id": "LNGC-241K-001",
+        "source_project_name": "HD1001",
+        "current_project_name": "HD9001",
         "based_on_pos_id": "POS-001",
-        "title": "기존 POS - 수정 초안",
-        "department": "기본설계팀",
-        "tags": [],
+        "title": "HD9001 POS 편집 초안",
+        "department": "영업설계팀",
         "sections": [{"section": "기관", "content": "기존 내용"}],
     }
 
@@ -73,13 +66,14 @@ def test_pos_draft_repository_saves_and_lists_items(tmp_path) -> None:
 def test_build_pos_document_text_includes_document_shape() -> None:
     text = build_pos_document_text(
         {
-            "pos_id": "POS-001",
+            "new_pos_id": "POS-001",
             "title": "기존 POS",
-            "department": "기본설계팀",
+            "department": "영업설계팀",
             "sections": [
                 {"section": "기관", "content": "기관 내용"},
                 {"section": "화물시스템", "content": "화물 내용"},
             ],
+            "_force_regenerate": True,
         },
         change_note="변경 메모",
     )

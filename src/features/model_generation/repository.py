@@ -12,3 +12,6 @@ class ModelRepository:
         for path in sorted(self.data_dir.glob("*.json")):
             items.append(json.loads(path.read_text(encoding="utf-8")))
         return items
+
+    def find_by_source_spec_id(self, spec_id: str) -> list[dict]:
+        return [item for item in self.list_all() if item.get("source_spec_id") == spec_id]

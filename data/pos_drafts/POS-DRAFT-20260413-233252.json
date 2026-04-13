@@ -1,0 +1,50 @@
+{
+  "draft_id": "POS-DRAFT-20260413-233252",
+  "saved_at": "2026-04-13 23:32:52",
+  "change_note": "HD1001 POS를 기준으로 가져오고 HD9001 사양 차이를 반영해 문구를 수정할 예정.",
+  "new_pos_id": "POS-HD9001-001",
+  "source_project_spec_id": "LNGC-241K-001",
+  "source_project_name": "HD1001",
+  "current_project_name": "HD9001",
+  "current_project_attributes": {
+    "basic_info": {
+      "ship_type_hint": "LNGC"
+    },
+    "principal_dimensions": {
+      "loa_m": 299.0,
+      "breadth_m": 46.4,
+      "draft_m": 11.5
+    },
+    "performance": {
+      "service_speed_kn": 19.5
+    },
+    "cargo_system": {
+      "cargo_capacity_m3": 241000
+    },
+    "machinery": {
+      "main_engine": "ME-GI"
+    }
+  },
+  "based_on_pos_id": "POS-HD1001-001",
+  "title": "HD9001 POS 편집 초안",
+  "department": "영업설계팀",
+  "sections": [
+    {
+      "section": "일반",
+      "content": "241K LNG 운반선의 구매 사양 기준과 적용 범위를 정의한다."
+    },
+    {
+      "section": "주요치수",
+      "content": "LOA 299.0 m / Breadth 46.4 m / Draft 11.5 m"
+    },
+    {
+      "section": "기관",
+      "content": "ME-GI 기준 추진 시스템과 기관부 공급 범위를 정리한다."
+    },
+    {
+      "section": "화물시스템",
+      "content": "241,000 cbm 및 GTT Mark III Flex 기준 화물창 시스템 요구사항을 정리한다."
+    }
+  ],
+  "document_text": "PURCHASE ORDER SPECIFICATION\n\nDocument ID : POS-HD9001-001\nTitle       : HD9001 POS 편집 초안\nDepartment  : 영업설계팀\n\n1. General\nThis specification defines the reusable purchase basis and edit-design scope for the current project.\n\n2. 일반\n241K LNG 운반선의 구매 사양 기준과 적용 범위를 정의한다.\n\n3. 주요치수\nLOA 299.0 m / Breadth 46.4 m / Draft 11.5 m\n\n4. 기관\nME-GI 기준 추진 시스템과 기관부 공급 범위를 정리한다.\n\n5. 화물시스템\n241,000 cbm 및 GTT Mark III Flex 기준 화물창 시스템 요구사항을 정리한다.\n\nChange Note\nHD1001 POS를 기준으로 가져오고 HD9001 사양 차이를 반영해 문구를 수정할 예정."
+}

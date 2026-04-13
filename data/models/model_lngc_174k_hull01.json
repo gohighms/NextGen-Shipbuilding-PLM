@@ -1,21 +1,157 @@
 {
-  "model_id": "MODEL-LNGC-174K-001",
-  "title": "LNGC 174K Hull Model",
-  "discipline": "선체/기관/화물 통합",
-  "tags": [
-    "SB-BAS-SHIPTYPE-LNGC",
-    "SB-DIM-LOA-290-0",
-    "SB-DIM-BREADTH-45-8",
-    "SB-DIM-DRAFT-11-2",
-    "SB-MAC-MENG-X-DF",
-    "SB-CGO-CAPA-174000"
-  ],
-  "document_text": "EDIT DESIGN MODEL / EBOM SUMMARY\n\nModel ID   : MODEL-LNGC-174K-001\nTitle      : LNGC 174K Hull Model\nDiscipline : 선체/기관/화물 통합\n\n1. Model Overview\nThis model summary defines the reusable engineering basis and EBOM scope for the 174K LNG carrier.\n\n2. EBOM Items\n- HULL-BLOCK-A01 / Hull block assembly / Qty 12\n- ENG-XDF-01 / Main engine package X-DF / Qty 1\n- CARGO-TANK-NO96 / Cargo tank system NO96 / Qty 4\n- CARGO-PUMP-01 / Cargo pump set / Qty 2\n\n3. Design Notes\n- Existing hull form reused for edit design baseline.\n- Engine room arrangement based on X-DF package.\n- Cargo handling model aligned with 174K capacity.",
+  "model_id": "MODEL-HD1002-001",
+  "source_spec_id": "LNGC-174K-001",
+  "source_project_name": "HD1002",
+  "title": "HD1002 LNGC 통합 기준 모델",
+  "discipline": "선체/의장 통합",
+  "model_profile": {
+    "basic_info": {
+      "ship_type": "LNGC"
+    },
+    "principal_dimensions": {
+      "loa_m": 290.0,
+      "breadth_m": 45.8,
+      "draft_m": 11.2
+    },
+    "machinery": {
+      "main_engine": "X-DF"
+    },
+    "cargo_system": {
+      "cargo_capacity_m3": 174000,
+      "cargo_tank_system": "GTT NO96"
+    }
+  },
+  "document_text": "EDIT DESIGN MODEL / EBOM SUMMARY\n\nModel ID   : MODEL-HD1002-001\nTitle      : HD1002 LNGC 통합 기준 모델\nDiscipline : 선체/의장 통합\n\n1. Model Overview\nThis model summary defines the reusable engineering basis and EBOM scope for the 174K LNG carrier.\n\n2. EBOM Items\n- HULL-BLOCK-A01 / Hull block assembly / Qty 12\n- HULL-BLOCK-A02 / Cargo area structure / Qty 10\n- ENG-XDF-01 / Main engine package X-DF / Qty 1\n- CARGO-TANK-NO96 / Cargo tank system NO96 / Qty 4\n- CARGO-PUMP-01 / Cargo pump set / Qty 2\n\n3. Design Notes\n- Existing hull form reused for edit design baseline.\n- Engine room arrangement based on X-DF package.\n- Cargo handling model aligned with 174K capacity.",
   "ebom_items": [
-    {"item_code": "HULL-BLOCK-A01", "description": "Hull block assembly", "quantity": 12},
-    {"item_code": "ENG-XDF-01", "description": "Main engine package X-DF", "quantity": 1},
-    {"item_code": "CARGO-TANK-NO96", "description": "Cargo tank system NO96", "quantity": 4},
-    {"item_code": "CARGO-PUMP-01", "description": "Cargo pump set", "quantity": 2}
+    {
+      "item_code": "HULL-BLOCK-A01",
+      "description": "Hull fore block assembly",
+      "quantity": 12
+    },
+    {
+      "item_code": "HULL-BLOCK-A02",
+      "description": "Cargo block assembly",
+      "quantity": 10
+    },
+    {
+      "item_code": "HULL-DECK-A01",
+      "description": "Upper deck structure assembly",
+      "quantity": 5
+    },
+    {
+      "item_code": "ENG-XDF-01",
+      "description": "Main engine package X-DF",
+      "quantity": 1
+    },
+    {
+      "item_code": "OUTFIT-ER-MODULE",
+      "description": "Engine room outfit module",
+      "quantity": 1
+    },
+    {
+      "item_code": "CARGO-TANK-NO96",
+      "description": "Cargo tank system NO96",
+      "quantity": 4
+    },
+    {
+      "item_code": "CARGO-PUMP-01",
+      "description": "Cargo pump set",
+      "quantity": 2
+    }
+  ],
+  "model_hierarchy": [
+    {
+      "path": "PROJECT/HD1002",
+      "type": "Project"
+    },
+    {
+      "path": "PROJECT/HD1002/HULL",
+      "type": "Discipline"
+    },
+    {
+      "path": "PROJECT/HD1002/HULL/STRUCTURE",
+      "type": "System"
+    },
+    {
+      "path": "PROJECT/HD1002/HULL/STRUCTURE/FORE-SHIP",
+      "type": "Zone"
+    },
+    {
+      "path": "PROJECT/HD1002/HULL/STRUCTURE/FORE-SHIP/BLOCK-A01",
+      "type": "Block"
+    },
+    {
+      "path": "PROJECT/HD1002/HULL/STRUCTURE/CARGO-AREA",
+      "type": "Zone"
+    },
+    {
+      "path": "PROJECT/HD1002/HULL/STRUCTURE/CARGO-AREA/BLOCK-A02",
+      "type": "Block"
+    },
+    {
+      "path": "PROJECT/HD1002/HULL/DECK-HOUSE",
+      "type": "System"
+    },
+    {
+      "path": "PROJECT/HD1002/HULL/DECK-HOUSE/UPPER-DECK-A01",
+      "type": "Assembly"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT",
+      "type": "Discipline"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/MACHINERY",
+      "type": "System"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/MACHINERY/ENGINE-ROOM",
+      "type": "Zone"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/MACHINERY/ENGINE-ROOM/MAIN-ENGINE",
+      "type": "Assembly"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/MACHINERY/ENGINE-ROOM/MAIN-ENGINE/ENG-XDF-01",
+      "type": "Equipment"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/MACHINERY/ENGINE-ROOM/AUXILIARY-SYSTEM/FUEL-GAS-SKID",
+      "type": "Equipment"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/CARGO",
+      "type": "System"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/CARGO/CARGO-TANK-AREA/TANK-01",
+      "type": "Tank"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/CARGO/CARGO-TANK-AREA/TANK-02",
+      "type": "Tank"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/CARGO/CARGO-TANK-AREA/TANK-03",
+      "type": "Tank"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/CARGO/CARGO-TANK-AREA/TANK-04",
+      "type": "Tank"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/CARGO/PUMP-ROOM/CARGO-PUMP-01A",
+      "type": "Equipment"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/CARGO/PUMP-ROOM/CARGO-PUMP-01B",
+      "type": "Equipment"
+    },
+    {
+      "path": "PROJECT/HD1002/OUTFIT/CARGO/PIPING/HEADER-NO96",
+      "type": "Assembly"
+    }
   ],
   "model_notes": [
     "Existing hull form reused for edit design baseline.",

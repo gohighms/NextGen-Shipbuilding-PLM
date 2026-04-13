@@ -1,15 +1,16 @@
 import pandas as pd
 import streamlit as st
 
-from src.common.paths import POS_DATA_DIR, POS_DRAFT_DIR, TAG_REGISTRY_DIR
+from src.common.paths import POS_DATA_DIR, POS_DRAFT_DIR
+from src.common.reuse_state import get_current_spec, get_selected_project
 from src.features.pos_generation.draft_repository import PosDraftRepository
 from src.features.pos_generation.repository import PosRepository
 from src.features.pos_generation.service import (
     build_pos_document_text,
     build_pos_draft,
-    recommend_pos_documents,
+    build_pos_edit_direction,
+    find_pos_documents_for_project,
 )
-from src.features.tag_management.registry_repository import TagRegistryRepository
 
 
 def render_pos_generation_page() -> None:
@@ -32,118 +33,101 @@ def render_pos_generation_page() -> None:
         unsafe_allow_html=True,
     )
 
-    st.title("POS 생성")
-    st.caption("저장된 TAG를 기준으로 기존 POS를 재활용하고, 수정 초안과 이력을 관리합니다.")
+    st.title("유사 프로젝트 기반 POS 편집설계")
+    st.caption("선택한 유사 프로젝트의 POS를 기준으로 현재 프로젝트 POS 초안을 편집설계합니다.")
 
-    registry_repository = TagRegistryRepository(TAG_REGISTRY_DIR)
+    selected_project = get_selected_project()
+    current_spec = get_current_spec()
+
+    if not selected_project or not current_spec:
+        st.info("먼저 `건조사양서 기반 유사 프로젝트 찾기`에서 기준 프로젝트를 선택해 주세요.")
+        return
+
     pos_repository = PosRepository(POS_DATA_DIR)
     draft_repository = PosDraftRepository(POS_DRAFT_DIR)
+    pos_items = find_pos_documents_for_project(selected_project, pos_repository.list_all())
 
-    registry_items = registry_repository.list_all()
-    pos_items = pos_repository.list_all()
-
-    if not registry_items:
-        st.info("먼저 TAG 관리 메뉴에서 TAG를 저장해 주세요. 저장된 TAG 레지스트리가 있어야 POS 추천이 가능합니다.")
-        return
-
-    if not pos_items:
-        st.info("비교할 기존 POS 샘플이 없습니다.")
-        return
-
+    st.subheader("현재 연결 기준")
     top_col1, top_col2 = st.columns([1, 1])
     with top_col1:
-        selected_registry_id = st.selectbox(
-            "기준 TAG 레지스트리 선택",
-            options=[item["registry_id"] for item in registry_items],
-            format_func=lambda registry_id: next(
-                f"{item['source_name']} ({item['registry_id']})"
-                for item in registry_items
-                if item["registry_id"] == registry_id
-            ),
-        )
-        selected_registry = next(item for item in registry_items if item["registry_id"] == selected_registry_id)
-        st.write(f"- 기준 사양: `{selected_registry['source_name']}`")
-        st.write(f"- TAG 수: `{selected_registry['tag_count']}`")
-
+        st.write(f"- 현재 프로젝트: `{current_spec['project_name']}`")
+        st.write(f"- 선택한 기준 프로젝트: `{selected_project['project_name']}`")
+        st.write(f"- 기준 사양서 ID: `{selected_project['spec_id']}`")
     with top_col2:
-        st.subheader(
-            "POS 생성 흐름",
-            help="저장된 TAG와 일치하는 기존 POS를 먼저 추천한 뒤, 적합한 문서를 복사해 수정 초안을 만드는 방식입니다.",
-        )
-        st.write("1. 기준 TAG 선택")
-        st.write("2. 기존 POS 추천 확인")
-        st.write("3. 재활용할 POS 선택")
-        st.write("4. 수정 초안 저장")
+        st.write(f"- 현재 프로젝트 추출 항목 수: `{len(current_spec.get('attributes', {}))}`")
+        st.write(f"- 기준 프로젝트 선종: `{selected_project.get('ship_type', '-')}`")
+        st.write("- 활용 방식: `선택한 유사 프로젝트 POS를 기준으로 편집설계`")
+
+    if not pos_items:
+        st.divider()
+        st.warning("선택한 기준 프로젝트와 연결된 POS 샘플이 아직 없습니다.")
+        return
 
     st.divider()
-    st.subheader(
-        "추천 POS 후보",
-        help="선택한 TAG와 많이 겹치는 기존 POS를 우선적으로 보여줍니다. 공통 TAG가 많을수록 재활용 가능성이 높습니다.",
-    )
-
-    recommended_items = recommend_pos_documents(selected_registry, pos_items, top_k=3)
-    recommendation_rows = []
-    for item in recommended_items:
-        recommendation_rows.append(
-            {
-                "POS ID": item["pos_id"],
-                "문서명": item["title"],
-                "부서": item["department"],
-                "일치 TAG 수": item["score"],
-                "공통 TAG": ", ".join(item["matched_tags"]) if item["matched_tags"] else "-",
-            }
-        )
-    st.dataframe(pd.DataFrame(recommendation_rows), use_container_width=True, hide_index=True)
+    st.subheader("기준 프로젝트 POS")
+    pos_rows = [
+        {
+            "POS ID": item["pos_id"],
+            "문서명": item["title"],
+            "담당부서": item["department"],
+            "기준 프로젝트": item.get("source_project_name", "-"),
+        }
+        for item in pos_items
+    ]
+    st.dataframe(pd.DataFrame(pos_rows), use_container_width=True, hide_index=True)
 
     selected_pos_id = st.selectbox(
-        "재활용할 POS 선택",
-        options=[item["pos_id"] for item in recommended_items],
+        "편집설계 기준 POS 선택",
+        options=[item["pos_id"] for item in pos_items],
         format_func=lambda pos_id: next(
             f"{item['title']} ({item['pos_id']})"
-            for item in recommended_items
+            for item in pos_items
             if item["pos_id"] == pos_id
         ),
     )
-    selected_pos = next(item for item in recommended_items if item["pos_id"] == selected_pos_id)["document"]
-    draft = build_pos_draft(selected_registry, selected_pos)
+    selected_pos = next(item for item in pos_items if item["pos_id"] == selected_pos_id)
+    draft = build_pos_draft(current_spec, selected_project, selected_pos)
 
     st.divider()
-    preview_col1, preview_col2 = st.columns([1, 1])
-    with preview_col1:
-        st.markdown("#### 선택한 기존 POS 미리보기")
+    baseline_col1, baseline_col2 = st.columns([1, 1])
+    with baseline_col1:
+        st.markdown("#### 기준 POS 미리보기")
         st.write(f"- POS ID: `{selected_pos['pos_id']}`")
         st.write(f"- 문서명: `{selected_pos['title']}`")
-        st.write(f"- 부서: `{selected_pos['department']}`")
-        st.write(f"- 적용 TAG 수: `{len(selected_pos.get('tags', []))}`")
-        st.dataframe(pd.DataFrame(selected_pos["sections"]), use_container_width=True, hide_index=True)
+        st.write(f"- 담당부서: `{selected_pos['department']}`")
+        st.dataframe(pd.DataFrame(selected_pos["sections"]), use_container_width=True, hide_index=True, height=420)
 
-    with preview_col2:
-        st.markdown("#### 수정 초안 작성")
-        edited_title = st.text_input("초안 문서명", value=draft["title"])
-        edited_department = st.text_input("담당 부서", value=draft["department"])
-        change_note = st.text_area(
-            "수정 메모",
-            height=180,
-            value="주요 사양 변경사항을 반영해 기관/화물 시스템 관련 항목을 우선 수정 예정.",
+    with baseline_col2:
+        st.markdown("#### 기준 POS 원문")
+        st.text_area(
+            "기준 POS 원문",
+            value=build_pos_document_text(selected_pos),
+            height=420,
+            disabled=True,
+            label_visibility="collapsed",
         )
 
-        st.write(f"- 새 POS 초안 ID: `{draft['new_pos_id']}`")
-        st.write(f"- 기준 TAG 레지스트리: `{draft['source_registry_id']}`")
-        st.write(f"- 재활용 원본 POS: `{draft['based_on_pos_id']}`")
+    st.divider()
+    current_col1, current_col2 = st.columns([1, 1])
+    with current_col1:
+        st.markdown("#### 현재 프로젝트 POS 편집")
+        edited_title = st.text_input("초안 문서명", value=draft["title"])
+        edited_department = st.text_input("담당 부서", value=draft["department"], disabled=True)
+        change_note = st.text_area(
+            "Change Note",
+            height=180,
+            value=(
+                f"{selected_project['project_name']} POS를 기준으로 가져오고 "
+                f"{current_spec['project_name']} 사양 차이를 반영해 문구를 수정할 예정."
+            ),
+        )
 
-        draft_rows = []
-        for section in draft["sections"]:
-            draft_rows.append(
-                {
-                    "섹션": section["section"],
-                    "기존 내용": section["content"],
-                    "수정 방향": _build_edit_hint(section["section"], selected_registry["tags"]),
-                }
-            )
-        st.dataframe(pd.DataFrame(draft_rows), use_container_width=True, hide_index=True)
+        st.write(f"- 새 POS ID: `{draft['new_pos_id']}`")
+        st.write(f"- 기준 프로젝트: `{draft['source_project_name']}`")
+        st.write(f"- 재활용한 POS: `{draft['based_on_pos_id']}`")
 
-        st.info("기존 POS를 완전히 새로 작성하기보다, TAG 기준으로 가까운 문서를 가져와 재편집하는 시나리오입니다.")
-
+    with current_col2:
+        st.markdown("#### 현재 프로젝트 POS 초안")
         final_draft = {
             **draft,
             "title": edited_title,
@@ -153,74 +137,62 @@ def render_pos_generation_page() -> None:
                     **draft,
                     "title": edited_title,
                     "department": edited_department,
+                    "_force_regenerate": True,
                 },
                 change_note=change_note,
             ),
         }
-
-        if st.button("POS 초안 저장", type="primary", use_container_width=True):
+        st.text_area(
+            "현재 프로젝트 POS 초안",
+            value=final_draft["document_text"],
+            height=300,
+            disabled=True,
+            label_visibility="collapsed",
+        )
+        if st.button("현재 POS 초안 저장", type="primary", use_container_width=True):
             saved_path = draft_repository.save(final_draft, change_note=change_note)
-            st.success(f"POS 초안을 저장했습니다: `{saved_path.name}`")
+            st.success(f"POS 초안을 저장했습니다. `{saved_path.name}`")
 
-    st.divider()
-    st.subheader(
-        "POS 원문 보기",
-        help="표 형태의 구조화 정보뿐 아니라, 실제 POS 문서처럼 읽을 수 있는 본문 형태를 함께 확인합니다.",
-    )
-    text_col1, text_col2 = st.columns([1, 1])
-    with text_col1:
-        st.markdown("#### 기존 POS 원문")
-        st.text_area(
-            "기존 POS 문서 본문",
-            value=build_pos_document_text(selected_pos),
-            height=420,
-            disabled=True,
-            label_visibility="collapsed",
-        )
-    with text_col2:
-        st.markdown("#### 새 POS 초안 원문")
-        draft_preview_text = build_pos_document_text(
+    draft_rows = []
+    for section in draft["sections"]:
+        edit_direction = build_pos_edit_direction(section["section"], current_spec.get("attributes", {}))
+        needs_change = any(keyword in edit_direction for keyword in ["조정", "다시 정리", "보완", "차이"])
+        draft_rows.append(
             {
-                **draft,
-                "title": edited_title,
-                "department": edited_department,
-            },
-            change_note=change_note,
-        )
-        st.text_area(
-            "새 POS 초안 문서 본문",
-            value=draft_preview_text,
-            height=420,
-            disabled=True,
-            label_visibility="collapsed",
-        )
-
-    st.divider()
-    _render_saved_draft_section(draft_repository)
-
-
-def _render_saved_draft_section(draft_repository: PosDraftRepository) -> None:
-    st.subheader(
-        "저장된 POS 초안 및 이력",
-        help="저장한 POS 초안을 다시 불러와 기준 TAG, 원본 POS, 수정 메모를 함께 확인할 수 있습니다.",
-    )
-
-    draft_items = draft_repository.list_all()
-    if not draft_items:
-        st.info("저장된 POS 초안이 없습니다. 위에서 수정 초안을 저장해 주세요.")
-        return
-
-    summary_rows = []
-    for item in draft_items:
-        summary_rows.append(
-            {
-                "초안 ID": item["draft_id"],
-                "문서명": item["title"],
-                "기준 TAG": item["source_registry_id"],
-                "원본 POS": item["based_on_pos_id"],
-                "저장 시각": item["saved_at"],
+                "섹션": section["section"],
+                "기준 내용": section["content"],
+                "편집 방향": edit_direction,
+                "판정": "검토 필요" if needs_change else "유지 가능",
             }
         )
+
+    st.markdown("#### 현재 프로젝트 POS 편집 검토표")
+    st.dataframe(pd.DataFrame(draft_rows), use_container_width=True, hide_index=True, height=260)
+
+    st.divider()
+    _render_saved_drafts(draft_repository, current_spec["project_name"])
+def _render_saved_drafts(draft_repository: PosDraftRepository, current_project_name: str) -> None:
+    st.subheader("저장된 POS 초안 및 이력")
+
+    draft_items = [
+        item
+        for item in draft_repository.list_all()
+        if item.get("current_project_name") == current_project_name
+    ]
+    if not draft_items:
+        st.info("현재 프로젝트 기준으로 저장된 POS 초안이 없습니다.")
+        return
+
+    summary_rows = [
+        {
+            "초안 ID": item["draft_id"],
+            "문서명": item["title"],
+            "기준 프로젝트": item.get("source_project_name", "-"),
+            "재활용 POS": item["based_on_pos_id"],
+            "저장 시각": item["saved_at"],
+        }
+        for item in draft_items
+    ]
     st.dataframe(pd.DataFrame(summary_rows), use_container_width=True, hide_index=True)
 
     selected_draft_id = st.selectbox(
@@ -238,15 +210,14 @@ def _render_saved_draft_section(draft_repository: PosDraftRepository) -> None:
     with detail_col1:
         st.write(f"- 초안 ID: `{selected_item['draft_id']}`")
         st.write(f"- 문서명: `{selected_item['title']}`")
-        st.write(f"- 기준 TAG 레지스트리: `{selected_item['source_registry_id']}`")
-        st.write(f"- 원본 POS: `{selected_item['based_on_pos_id']}`")
-        st.write(f"- 담당 부서: `{selected_item['department']}`")
+        st.write(f"- 기준 프로젝트: `{selected_item.get('source_project_name', '-')}`")
+        st.write(f"- 재활용 POS: `{selected_item['based_on_pos_id']}`")
         st.write(f"- 저장 시각: `{selected_item['saved_at']}`")
     with detail_col2:
-        st.markdown("#### 수정 메모")
+        st.markdown("#### Change Note")
         st.write(selected_item["change_note"])
 
-    st.markdown("#### 저장된 초안 섹션")
+    st.markdown("#### 저장된 POS 초안 섹션")
     st.dataframe(pd.DataFrame(selected_item["sections"]), use_container_width=True, hide_index=True)
 
     st.markdown("#### 저장된 POS 초안 원문")
@@ -257,15 +228,3 @@ def _render_saved_draft_section(draft_repository: PosDraftRepository) -> None:
         disabled=True,
         label_visibility="collapsed",
     )
-
-
-def _build_edit_hint(section_name: str, registry_tags: list[dict]) -> str:
-    tag_names = [item["tag_name"] for item in registry_tags]
-
-    if section_name == "주요치수" and any("SB-DIM-" in tag for tag in tag_names):
-        return "기준 TAG의 주요치수 값을 반영해 수치 검토"
-    if section_name == "기관" and any("SB-MAC-" in tag for tag in tag_names):
-        return "주기관 관련 TAG 기준으로 기관부 기술내용 수정"
-    if section_name == "화물시스템" and any("SB-CGO-" in tag for tag in tag_names):
-        return "화물창/용적 TAG 기준으로 화물 시스템 내용 보완"
-    return "기존 내용을 유지하되 기준 TAG와 차이 여부 점검"
