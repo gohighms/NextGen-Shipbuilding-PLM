@@ -20,100 +20,176 @@
       "capacity_teu": 15000
     }
   },
-  "document_text": "EDIT DESIGN MODEL / EBOM SUMMARY\n\nModel ID   : MODEL-HD1003-001\nTitle      : HD1003 Container 통합 기준 모델\nDiscipline : 선체/의장 통합\n\n1. Model Overview\nThis model summary defines the reusable engineering basis and EBOM scope for the 15,000 TEU container carrier.\n\n2. EBOM Items\n- HULL-BLOCK-C01 / Hull block assembly / Qty 18\n- ENG-WINGD-01 / Main engine package WinGD / Qty 1\n- DECK-CELLGUIDE-01 / Deck cell guide set / Qty 24\n- LASHING-BRIDGE-01 / Lashing bridge set / Qty 8\n\n3. Design Notes\n- Existing container carrier hull model reused.\n- Main engine arrangement follows WinGD package.\n- Cargo outfitting focused on container deck arrangement.",
-  "ebom_items": [
-    {
-      "item_code": "HULL-BLOCK-C01",
-      "description": "Hull fore block assembly",
-      "quantity": 18
-    },
-    {
-      "item_code": "HULL-BLOCK-C02",
-      "description": "Midship cargo block assembly",
-      "quantity": 22
-    },
-    {
-      "item_code": "ENG-WINGD-01",
-      "description": "Main engine package WinGD",
-      "quantity": 1
-    },
-    {
-      "item_code": "DECK-CELLGUIDE-01",
-      "description": "Deck cell guide set",
-      "quantity": 24
-    },
-    {
-      "item_code": "LASHING-BRIDGE-01",
-      "description": "Lashing bridge set",
-      "quantity": 8
-    },
-    {
-      "item_code": "OUTFIT-HATCH-COVER",
-      "description": "Hatch cover assembly",
-      "quantity": 10
-    }
-  ],
   "model_hierarchy": [
     {
       "path": "PROJECT/HD1003",
-      "type": "Project"
+      "node_code": "HD1003",
+      "name": "HD1003",
+      "type": "Project",
+      "design_structure": "프로젝트",
+      "model_type": "프로젝트",
+      "spec_basis": "15000TEU Container"
     },
     {
       "path": "PROJECT/HD1003/HULL",
-      "type": "Discipline"
+      "node_code": "HULL",
+      "name": "선체",
+      "type": "Discipline",
+      "design_structure": "선체",
+      "model_type": "설계구조"
     },
     {
-      "path": "PROJECT/HD1003/HULL/STRUCTURE/FORE-SHIP/BLOCK-C01",
-      "type": "Block"
+      "path": "PROJECT/HD1003/HULL/SHELL-PLATING",
+      "node_code": "SHELL-PLATING",
+      "name": "외판 구조",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "플레이트 그룹"
     },
     {
-      "path": "PROJECT/HD1003/HULL/STRUCTURE/MID-SHIP/BLOCK-C02",
-      "type": "Block"
+      "path": "PROJECT/HD1003/HULL/SHELL-PLATING/SIDE-SHELL/PLATE-SS-001",
+      "node_code": "PLATE-SS-001",
+      "name": "현측 외판 001",
+      "type": "Part",
+      "design_structure": "선체",
+      "model_type": "플레이트",
+      "spec_basis": "LOA/Breadth 반영",
+      "reuse_hint_fields": [
+        "principal_dimensions.loa_m",
+        "principal_dimensions.breadth_m"
+      ]
     },
     {
-      "path": "PROJECT/HD1003/HULL/DECK-HOUSE/BRIDGE-DECK",
-      "type": "Assembly"
+      "path": "PROJECT/HD1003/HULL/DECK-STRUCTURE",
+      "node_code": "DECK-STRUCTURE",
+      "name": "갑판 구조",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "갑판 구조"
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT",
-      "type": "Discipline"
+      "path": "PROJECT/HD1003/HULL/DECK-STRUCTURE/HATCH-COAMING",
+      "node_code": "HATCH-COAMING",
+      "name": "해치 코밍",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "보강 구조"
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT/MACHINERY/ENGINE-ROOM/MAIN-ENGINE/ENG-WINGD-01",
-      "type": "Equipment"
+      "path": "PROJECT/HD1003/HULL/DECK-STRUCTURE/HATCH-COAMING/STIFFENER-HC-001",
+      "node_code": "STIFFENER-HC-001",
+      "name": "해치 코밍 보강재 001",
+      "type": "Part",
+      "design_structure": "선체",
+      "model_type": "스티프너",
+      "spec_basis": "TEU 용량 반영",
+      "reuse_hint_fields": [
+        "cargo_system.capacity_teu"
+      ]
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT/MACHINERY/ENGINE-ROOM/AUXILIARY-SYSTEM/GENERATOR-SET-01",
-      "type": "Equipment"
+      "path": "PROJECT/HD1003/OUTFIT-STEEL",
+      "node_code": "OUTFIT-STEEL",
+      "name": "의장-철의",
+      "type": "Discipline",
+      "design_structure": "의장-철의",
+      "model_type": "설계구조"
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT/CARGO/CELL-GUIDE/CELLGUIDE-01",
-      "type": "Assembly"
+      "path": "PROJECT/HD1003/OUTFIT-STEEL/LASHING-SUPPORT",
+      "node_code": "LASHING-SUPPORT",
+      "name": "래싱 지지구조",
+      "type": "Assembly",
+      "design_structure": "의장-철의",
+      "model_type": "서포트 구조",
+      "spec_basis": "TEU 용량 반영",
+      "reuse_hint_fields": [
+        "cargo_system.capacity_teu"
+      ]
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT/CARGO/CELL-GUIDE/CELLGUIDE-02",
-      "type": "Assembly"
+      "path": "PROJECT/HD1003/OUTFIT-STEEL/LASHING-SUPPORT/SUPPORT-LS-001",
+      "node_code": "SUPPORT-LS-001",
+      "name": "래싱 지지대 001",
+      "type": "Part",
+      "design_structure": "의장-철의",
+      "model_type": "서포트",
+      "spec_basis": "TEU 용량 반영"
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT/CARGO/HATCH-COVER/HATCH-COVER-01",
-      "type": "Assembly"
+      "path": "PROJECT/HD1003/OUTFIT-PIPING",
+      "node_code": "OUTFIT-PIPING",
+      "name": "의장-배관",
+      "type": "Discipline",
+      "design_structure": "의장-배관",
+      "model_type": "설계구조"
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT/CARGO/HATCH-COVER/HATCH-COVER-02",
-      "type": "Assembly"
+      "path": "PROJECT/HD1003/OUTFIT-PIPING/BALLAST-LINE",
+      "node_code": "BALLAST-LINE",
+      "name": "발라스트 라인",
+      "type": "Assembly",
+      "design_structure": "의장-배관",
+      "model_type": "배관 묶음",
+      "spec_basis": "선형 반영"
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT/CARGO/LASHING/LASHING-BRIDGE-01",
-      "type": "Assembly"
+      "path": "PROJECT/HD1003/OUTFIT-PIPING/BALLAST-LINE/PIPE-BL-001",
+      "node_code": "PIPE-BL-001",
+      "name": "발라스트 파이프 001",
+      "type": "Part",
+      "design_structure": "의장-배관",
+      "model_type": "파이프",
+      "spec_basis": "선형 반영"
     },
     {
-      "path": "PROJECT/HD1003/OUTFIT/CARGO/LASHING/LASHING-BRIDGE-02",
-      "type": "Assembly"
+      "path": "PROJECT/HD1003/OUTFIT-ELECTRIC",
+      "node_code": "OUTFIT-ELECTRIC",
+      "name": "의장-전장",
+      "type": "Discipline",
+      "design_structure": "의장-전장",
+      "model_type": "설계구조"
+    },
+    {
+      "path": "PROJECT/HD1003/OUTFIT-ELECTRIC/DECK-LIGHTING",
+      "node_code": "DECK-LIGHTING",
+      "name": "갑판 조명",
+      "type": "Assembly",
+      "design_structure": "의장-전장",
+      "model_type": "전장 묶음"
+    },
+    {
+      "path": "PROJECT/HD1003/OUTFIT-ELECTRIC/DECK-LIGHTING/CABLE-TRAY-001",
+      "node_code": "CABLE-TRAY-001",
+      "name": "갑판 케이블 트레이 001",
+      "type": "Part",
+      "design_structure": "의장-전장",
+      "model_type": "케이블트레이",
+      "spec_basis": "갑판 배치 반영"
+    },
+    {
+      "path": "PROJECT/HD1003/OUTFIT-MACHINERY",
+      "node_code": "OUTFIT-MACHINERY",
+      "name": "의장-기계",
+      "type": "Discipline",
+      "design_structure": "의장-기계",
+      "model_type": "설계구조"
+    },
+    {
+      "path": "PROJECT/HD1003/OUTFIT-MACHINERY/MAIN-PROPULSION/MAIN-ENGINE",
+      "node_code": "MAIN-ENGINE",
+      "name": "메인 엔진 기자재",
+      "type": "Assembly",
+      "design_structure": "의장-기계",
+      "model_type": "메인엔진",
+      "spec_basis": "메인 엔진 기자재 반영",
+      "reuse_hint_fields": [
+        "machinery.main_engine"
+      ]
     }
   ],
   "model_notes": [
-    "Existing container carrier hull model reused.",
-    "Main engine arrangement follows WinGD package.",
-    "Cargo outfitting focused on container deck arrangement."
+    "컨테이너선 기준 모델 역시 block division 이전 설계구조만을 표현합니다.",
+    "선체, 래싱 지지구조, 전장 구조를 중심으로 재활용 판단을 수행합니다."
   ]
 }

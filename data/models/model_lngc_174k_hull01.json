@@ -21,141 +21,223 @@
       "cargo_tank_system": "GTT NO96"
     }
   },
-  "document_text": "EDIT DESIGN MODEL / EBOM SUMMARY\n\nModel ID   : MODEL-HD1002-001\nTitle      : HD1002 LNGC 통합 기준 모델\nDiscipline : 선체/의장 통합\n\n1. Model Overview\nThis model summary defines the reusable engineering basis and EBOM scope for the 174K LNG carrier.\n\n2. EBOM Items\n- HULL-BLOCK-A01 / Hull block assembly / Qty 12\n- HULL-BLOCK-A02 / Cargo area structure / Qty 10\n- ENG-XDF-01 / Main engine package X-DF / Qty 1\n- CARGO-TANK-NO96 / Cargo tank system NO96 / Qty 4\n- CARGO-PUMP-01 / Cargo pump set / Qty 2\n\n3. Design Notes\n- Existing hull form reused for edit design baseline.\n- Engine room arrangement based on X-DF package.\n- Cargo handling model aligned with 174K capacity.",
-  "ebom_items": [
-    {
-      "item_code": "HULL-BLOCK-A01",
-      "description": "Hull fore block assembly",
-      "quantity": 12
-    },
-    {
-      "item_code": "HULL-BLOCK-A02",
-      "description": "Cargo block assembly",
-      "quantity": 10
-    },
-    {
-      "item_code": "HULL-DECK-A01",
-      "description": "Upper deck structure assembly",
-      "quantity": 5
-    },
-    {
-      "item_code": "ENG-XDF-01",
-      "description": "Main engine package X-DF",
-      "quantity": 1
-    },
-    {
-      "item_code": "OUTFIT-ER-MODULE",
-      "description": "Engine room outfit module",
-      "quantity": 1
-    },
-    {
-      "item_code": "CARGO-TANK-NO96",
-      "description": "Cargo tank system NO96",
-      "quantity": 4
-    },
-    {
-      "item_code": "CARGO-PUMP-01",
-      "description": "Cargo pump set",
-      "quantity": 2
-    }
-  ],
   "model_hierarchy": [
     {
       "path": "PROJECT/HD1002",
-      "type": "Project"
+      "node_code": "HD1002",
+      "name": "HD1002",
+      "type": "Project",
+      "design_structure": "프로젝트",
+      "model_type": "프로젝트",
+      "spec_basis": "174K LNGC"
     },
     {
       "path": "PROJECT/HD1002/HULL",
-      "type": "Discipline"
+      "node_code": "HULL",
+      "name": "선체",
+      "type": "Discipline",
+      "design_structure": "선체",
+      "model_type": "설계구조"
     },
     {
-      "path": "PROJECT/HD1002/HULL/STRUCTURE",
-      "type": "System"
+      "path": "PROJECT/HD1002/HULL/SHELL-PLATING",
+      "node_code": "SHELL-PLATING",
+      "name": "외판 구조",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "플레이트 그룹"
     },
     {
-      "path": "PROJECT/HD1002/HULL/STRUCTURE/FORE-SHIP",
-      "type": "Zone"
+      "path": "PROJECT/HD1002/HULL/SHELL-PLATING/SIDE-SHELL",
+      "node_code": "SIDE-SHELL",
+      "name": "현측 외판",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "플레이트 묶음",
+      "spec_basis": "LOA/Breadth 반영"
     },
     {
-      "path": "PROJECT/HD1002/HULL/STRUCTURE/FORE-SHIP/BLOCK-A01",
-      "type": "Block"
+      "path": "PROJECT/HD1002/HULL/SHELL-PLATING/SIDE-SHELL/PLATE-SS-001",
+      "node_code": "PLATE-SS-001",
+      "name": "현측 외판 001",
+      "type": "Part",
+      "design_structure": "선체",
+      "model_type": "플레이트",
+      "spec_basis": "LOA/Breadth 반영",
+      "reuse_hint_fields": [
+        "principal_dimensions.loa_m",
+        "principal_dimensions.breadth_m"
+      ]
     },
     {
-      "path": "PROJECT/HD1002/HULL/STRUCTURE/CARGO-AREA",
-      "type": "Zone"
+      "path": "PROJECT/HD1002/HULL/INTERNAL-STRUCTURE",
+      "node_code": "INTERNAL-STRUCTURE",
+      "name": "내부 구조",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "보강 구조"
     },
     {
-      "path": "PROJECT/HD1002/HULL/STRUCTURE/CARGO-AREA/BLOCK-A02",
-      "type": "Block"
+      "path": "PROJECT/HD1002/HULL/INTERNAL-STRUCTURE/TRANSVERSE-MEMBER",
+      "node_code": "TRANSVERSE-MEMBER",
+      "name": "횡보강재",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "스티프너 묶음",
+      "spec_basis": "Breadth 반영"
     },
     {
-      "path": "PROJECT/HD1002/HULL/DECK-HOUSE",
-      "type": "System"
+      "path": "PROJECT/HD1002/HULL/INTERNAL-STRUCTURE/TRANSVERSE-MEMBER/STIFFENER-TV-001",
+      "node_code": "STIFFENER-TV-001",
+      "name": "횡보강재 001",
+      "type": "Part",
+      "design_structure": "선체",
+      "model_type": "스티프너",
+      "spec_basis": "Breadth 반영",
+      "reuse_hint_fields": [
+        "principal_dimensions.breadth_m"
+      ]
     },
     {
-      "path": "PROJECT/HD1002/HULL/DECK-HOUSE/UPPER-DECK-A01",
-      "type": "Assembly"
+      "path": "PROJECT/HD1002/OUTFIT-STEEL",
+      "node_code": "OUTFIT-STEEL",
+      "name": "의장-철의",
+      "type": "Discipline",
+      "design_structure": "의장-철의",
+      "model_type": "설계구조"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT",
-      "type": "Discipline"
+      "path": "PROJECT/HD1002/OUTFIT-STEEL/FOUNDATION",
+      "node_code": "FOUNDATION",
+      "name": "기기 받침 구조",
+      "type": "Assembly",
+      "design_structure": "의장-철의",
+      "model_type": "서포트 구조"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/MACHINERY",
-      "type": "System"
+      "path": "PROJECT/HD1002/OUTFIT-STEEL/FOUNDATION/MAIN-ENGINE-SEAT",
+      "node_code": "MAIN-ENGINE-SEAT",
+      "name": "메인 엔진 기자재 받침대",
+      "type": "Assembly",
+      "design_structure": "의장-철의",
+      "model_type": "베드",
+      "spec_basis": "메인 엔진 기자재 반영",
+      "reuse_hint_fields": [
+        "machinery.main_engine"
+      ]
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/MACHINERY/ENGINE-ROOM",
-      "type": "Zone"
+      "path": "PROJECT/HD1002/OUTFIT-PIPING",
+      "node_code": "OUTFIT-PIPING",
+      "name": "의장-배관",
+      "type": "Discipline",
+      "design_structure": "의장-배관",
+      "model_type": "설계구조"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/MACHINERY/ENGINE-ROOM/MAIN-ENGINE",
-      "type": "Assembly"
+      "path": "PROJECT/HD1002/OUTFIT-PIPING/FUEL-GAS-LINE",
+      "node_code": "FUEL-GAS-LINE",
+      "name": "연료가스 라인",
+      "type": "Assembly",
+      "design_structure": "의장-배관",
+      "model_type": "배관 묶음",
+      "spec_basis": "메인 엔진 기자재 반영",
+      "reuse_hint_fields": [
+        "machinery.main_engine"
+      ]
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/MACHINERY/ENGINE-ROOM/MAIN-ENGINE/ENG-XDF-01",
-      "type": "Equipment"
+      "path": "PROJECT/HD1002/OUTFIT-PIPING/FUEL-GAS-LINE/PIPE-FG-001",
+      "node_code": "PIPE-FG-001",
+      "name": "연료가스 파이프 001",
+      "type": "Part",
+      "design_structure": "의장-배관",
+      "model_type": "파이프",
+      "spec_basis": "메인 엔진 기자재 반영"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/MACHINERY/ENGINE-ROOM/AUXILIARY-SYSTEM/FUEL-GAS-SKID",
-      "type": "Equipment"
+      "path": "PROJECT/HD1002/OUTFIT-PIPING/CARGO-LINE",
+      "node_code": "CARGO-LINE",
+      "name": "화물 라인",
+      "type": "Assembly",
+      "design_structure": "의장-배관",
+      "model_type": "배관 묶음",
+      "spec_basis": "화물창 용적 반영",
+      "reuse_hint_fields": [
+        "cargo_system.cargo_capacity_m3",
+        "cargo_system.cargo_tank_system"
+      ]
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/CARGO",
-      "type": "System"
+      "path": "PROJECT/HD1002/OUTFIT-PIPING/CARGO-LINE/VALVE-CG-001",
+      "node_code": "VALVE-CG-001",
+      "name": "화물 밸브 001",
+      "type": "Part",
+      "design_structure": "의장-배관",
+      "model_type": "밸브",
+      "spec_basis": "화물창 용적 반영"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/CARGO/CARGO-TANK-AREA/TANK-01",
-      "type": "Tank"
+      "path": "PROJECT/HD1002/OUTFIT-ELECTRIC",
+      "node_code": "OUTFIT-ELECTRIC",
+      "name": "의장-전장",
+      "type": "Discipline",
+      "design_structure": "의장-전장",
+      "model_type": "설계구조"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/CARGO/CARGO-TANK-AREA/TANK-02",
-      "type": "Tank"
+      "path": "PROJECT/HD1002/OUTFIT-ELECTRIC/POWER-DISTRIBUTION",
+      "node_code": "POWER-DISTRIBUTION",
+      "name": "주 배전",
+      "type": "Assembly",
+      "design_structure": "의장-전장",
+      "model_type": "전장 묶음",
+      "spec_basis": "메인 엔진 기자재 반영"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/CARGO/CARGO-TANK-AREA/TANK-03",
-      "type": "Tank"
+      "path": "PROJECT/HD1002/OUTFIT-ELECTRIC/POWER-DISTRIBUTION/CABLE-TRAY-001",
+      "node_code": "CABLE-TRAY-001",
+      "name": "케이블 트레이 001",
+      "type": "Part",
+      "design_structure": "의장-전장",
+      "model_type": "케이블트레이",
+      "spec_basis": "메인 엔진 기자재 반영",
+      "reuse_hint_fields": [
+        "machinery.main_engine"
+      ]
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/CARGO/CARGO-TANK-AREA/TANK-04",
-      "type": "Tank"
+      "path": "PROJECT/HD1002/OUTFIT-MACHINERY",
+      "node_code": "OUTFIT-MACHINERY",
+      "name": "의장-기계",
+      "type": "Discipline",
+      "design_structure": "의장-기계",
+      "model_type": "설계구조"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/CARGO/PUMP-ROOM/CARGO-PUMP-01A",
-      "type": "Equipment"
+      "path": "PROJECT/HD1002/OUTFIT-MACHINERY/MAIN-PROPULSION",
+      "node_code": "MAIN-PROPULSION",
+      "name": "주 추진",
+      "type": "Assembly",
+      "design_structure": "의장-기계",
+      "model_type": "기계 묶음"
     },
     {
-      "path": "PROJECT/HD1002/OUTFIT/CARGO/PUMP-ROOM/CARGO-PUMP-01B",
-      "type": "Equipment"
-    },
-    {
-      "path": "PROJECT/HD1002/OUTFIT/CARGO/PIPING/HEADER-NO96",
-      "type": "Assembly"
+      "path": "PROJECT/HD1002/OUTFIT-MACHINERY/MAIN-PROPULSION/MAIN-ENGINE",
+      "node_code": "MAIN-ENGINE",
+      "name": "메인 엔진 기자재",
+      "type": "Assembly",
+      "design_structure": "의장-기계",
+      "model_type": "메인엔진",
+      "spec_basis": "메인 엔진 기자재 반영",
+      "reuse_hint_fields": [
+        "machinery.main_engine"
+      ]
     }
   ],
   "model_notes": [
-    "Existing hull form reused for edit design baseline.",
-    "Engine room arrangement based on X-DF package.",
-    "Cargo handling model aligned with 174K capacity."
+    "기준 모델은 block division 이전의 설계구조만을 표현합니다.",
+    "174K LNGC 기준으로 선체, 배관, 전장 구조를 비교합니다.",
+    "메인 엔진 기자재와 화물창 형식이 달라질 때 재활용 검토 범위가 달라집니다."
   ]
 }

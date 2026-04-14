@@ -11,6 +11,14 @@ if str(ROOT_DIR) not in sys.path:
 
 from src.common.reuse_state import get_current_spec, get_selected_project
 from src.common.session_bootstrap import initialize_session_environment
+from src.features.bom_management.ui import (
+    render_block_division_page,
+    render_mbom_page,
+    render_wbom_page,
+    render_work_instruction_page,
+)
+from src.features.design_change_management.ui import render_design_change_management_page
+from src.features.design_plan_management.ui import render_design_plan_management_page
 from src.features.model_generation.ui import render_model_generation_page
 from src.features.pos_generation.ui import render_pos_generation_page
 from src.features.spec_search.ui import render_spec_search_page
@@ -18,6 +26,8 @@ from src.features.tag_management.ui import render_tag_management_page
 
 
 REUSE_AREA = "실적선 기반 설계 재활용"
+PROJECT_AREA = "프로젝트 관리"
+BOM_AREA = "목적별 BOM 관리"
 THREAD_AREA = "디지털 쓰레드"
 NAVIGATION_STATE_KEY = "selected_navigation_page"
 
@@ -25,6 +35,18 @@ REUSE_PAGES = {
     "1. 건조사양서 기반 유사 프로젝트 찾기": render_spec_search_page,
     "2. 유사 프로젝트 기반 POS 편집설계": render_pos_generation_page,
     "3. 유사 프로젝트 기반 모델 편집설계": render_model_generation_page,
+}
+
+PROJECT_PAGES = {
+    "1. 설계계획(DP) 관리": render_design_plan_management_page,
+    "2. 설계 변경 관리": render_design_change_management_page,
+}
+
+BOM_PAGES = {
+    "1. Block Division": render_block_division_page,
+    "2. MBOM 생성": render_mbom_page,
+    "3. WBOM 생성": render_wbom_page,
+    "4. 작업지시서": render_work_instruction_page,
 }
 
 THREAD_PAGES = {
@@ -68,12 +90,20 @@ def main() -> None:
     initialize_session_environment()
 
     st.sidebar.title("NextGen Shipbuilding PLM")
-    area_name = st.sidebar.selectbox("영역 선택", [REUSE_AREA, THREAD_AREA])
+    area_name = st.sidebar.selectbox("영역 선택", [REUSE_AREA, PROJECT_AREA, BOM_AREA, THREAD_AREA])
 
     if area_name == REUSE_AREA:
         st.sidebar.markdown("### 실적선 기반 설계 재활용")
         page_name = st.sidebar.radio("세부 기능", list(REUSE_PAGES.keys()))
         render_page = REUSE_PAGES[page_name]
+    elif area_name == PROJECT_AREA:
+        st.sidebar.markdown("### 프로젝트 관리")
+        page_name = st.sidebar.radio("세부 기능", list(PROJECT_PAGES.keys()))
+        render_page = PROJECT_PAGES[page_name]
+    elif area_name == BOM_AREA:
+        st.sidebar.markdown("### 목적별 BOM 관리")
+        page_name = st.sidebar.radio("세부 기능", list(BOM_PAGES.keys()))
+        render_page = BOM_PAGES[page_name]
     else:
         st.sidebar.markdown("### 디지털 쓰레드")
         page_name = st.sidebar.radio("세부 기능", list(THREAD_PAGES.keys()))

@@ -1,6 +1,19 @@
 from src.features.spec_search.attribute_utils import flatten_attributes
 
 
+FIELD_LABELS = {
+    "basic_info.ship_type": "선종",
+    "basic_info.ship_type_hint": "선종 힌트",
+    "principal_dimensions.loa_m": "전장(LOA)",
+    "principal_dimensions.breadth_m": "선폭(Breadth)",
+    "principal_dimensions.draft_m": "만재흘수(Draft)",
+    "machinery.main_engine": "기자재 / Main Engine",
+    "cargo_system.cargo_capacity_m3": "화물창 용적",
+    "cargo_system.cargo_tank_system": "화물창 형식",
+    "cargo_system.capacity_teu": "적재 용량(TEU)",
+}
+
+
 def find_models_for_project(selected_project: dict, model_items: list[dict]) -> list[dict]:
     spec_id = selected_project.get("spec_id")
     matched_items = [item for item in model_items if item.get("source_spec_id") == spec_id]
@@ -17,43 +30,48 @@ def summarize_model_similarity(current_attributes: dict, model_item: dict) -> di
 
     for field_name, baseline_value in baseline_flat.items():
         current_value = current_flat.get(field_name)
+        field_label = FIELD_LABELS.get(field_name, field_name)
+
         if current_value is None:
             comparison_rows.append(
                 {
                     "field_name": field_name,
+                    "field_label": field_label,
                     "current_value": "-",
                     "baseline_value": baseline_value,
                     "difference": "입력 없음",
-                    "review_status": "정보 부족",
+                    "review_status": "입력 보완 필요",
                 }
             )
             continue
 
         if isinstance(current_value, (int, float)) and isinstance(baseline_value, (int, float)):
-            gap_ratio = _calculate_gap_ratio(current_value, baseline_value)
-            difference = f"{abs(current_value - baseline_value):,.3f}"
+            gap_ratio = _calculate_gap_ratio(float(current_value), float(baseline_value))
+            difference = abs(float(current_value) - float(baseline_value))
             if gap_ratio <= 0.05:
                 review_status = "재활용 적합"
                 matched_count += 1
             elif gap_ratio <= 0.12:
                 review_status = "조건부 검토"
             else:
-                review_status = "차이 큼"
+                review_status = "차이 있음"
+            difference_text = f"{difference:,.3f}"
         else:
-            if str(current_value).upper() == str(baseline_value).upper():
+            if str(current_value).strip().upper() == str(baseline_value).strip().upper():
                 review_status = "재활용 적합"
-                difference = "동일"
+                difference_text = "동일"
                 matched_count += 1
             else:
-                review_status = "차이 큼"
-                difference = "상이"
+                review_status = "차이 있음"
+                difference_text = "상이"
 
         comparison_rows.append(
             {
                 "field_name": field_name,
+                "field_label": field_label,
                 "current_value": current_value,
                 "baseline_value": baseline_value,
-                "difference": difference,
+                "difference": difference_text,
                 "review_status": review_status,
             }
         )
@@ -70,79 +88,40 @@ def build_model_reuse_suggestions(current_attributes: dict, model_item: dict) ->
     comparison = summarize_model_similarity(current_attributes, model_item)
     comparison_map = {row["field_name"]: row for row in comparison["comparison_rows"]}
 
-    suggestion_specs = [
-        {
-            "name": "선체 구조",
-            "paths": ["PROJECT/{project}/HULL"],
-            "fields": [
-                "principal_dimensions.loa_m",
-                "principal_dimensions.breadth_m",
-                "principal_dimensions.draft_m",
-            ],
-        },
-        {
-            "name": "의장-철의",
-            "paths": ["PROJECT/{project}/OUTFIT/STEEL-OUTFIT"],
-            "fields": ["principal_dimensions.loa_m", "principal_dimensions.breadth_m"],
-        },
-        {
-            "name": "의장-목의",
-            "paths": ["PROJECT/{project}/OUTFIT/JOINERY"],
-            "fields": ["basic_info.ship_type_hint", "basic_info.ship_type"],
-        },
-        {
-            "name": "의장-배관",
-            "paths": ["PROJECT/{project}/OUTFIT/PIPING"],
-            "fields": ["cargo_system.cargo_capacity_m3", "cargo_system.cargo_tank_system"],
-        },
-        {
-            "name": "의장-전장",
-            "paths": ["PROJECT/{project}/OUTFIT/ELECTRIC"],
-            "fields": ["machinery.main_engine"],
-        },
-    ]
-
-    project_name = model_item.get("source_project_name", "")
-    available_paths = [item["path"] for item in model_item.get("model_hierarchy", [])]
     suggestions = []
+    for item in model_item.get("model_hierarchy", []):
+        hint_fields = item.get("reuse_hint_fields", [])
+        if not hint_fields:
+            continue
 
-    for spec in suggestion_specs:
-        evidence_rows = [comparison_map[field] for field in spec["fields"] if field in comparison_map]
+        evidence_rows = [comparison_map[field] for field in hint_fields if field in comparison_map]
         if not evidence_rows:
             continue
 
-        matched = sum(1 for row in evidence_rows if row["review_status"] == "재활용 적합")
-        conditional = sum(1 for row in evidence_rows if row["review_status"] == "정보 부족")
-        score = round((matched + conditional * 0.4) / len(evidence_rows), 3)
-
-        if score >= 0.66:
-            review_status = "재활용 추천"
-        elif score >= 0.33:
-            review_status = "조건부 검토"
-        else:
-            review_status = "제외"
-
-        root_paths = [path.format(project=project_name) for path in spec["paths"]]
-        root_paths = [path for path in root_paths if any(item_path == path or item_path.startswith(f"{path}/") for item_path in available_paths)]
-        if not root_paths:
+        score = _score_evidence_rows(evidence_rows)
+        if score < 0.35:
             continue
 
+        review_status = _to_review_status(score)
         evidence = " / ".join(
-            f"{row['field_name']}: 현재 `{row['current_value']}` / 기준 `{row['baseline_value']}`"
+            f"{row['field_label']}: 현재 `{row['current_value']}` / 기준 `{row['baseline_value']}`"
             for row in evidence_rows
         )
         suggestions.append(
             {
-                "name": spec["name"],
-                "score": score,
+                "path": item["path"],
+                "node_code": item.get("node_code", item["path"].split("/")[-1]),
+                "node_name": item.get("name", item["path"].split("/")[-1]),
+                "design_structure": item.get("design_structure", _default_design_structure(item["path"])),
+                "model_type": item.get("model_type", item.get("type", "모델 항목")),
+                "score": round(score, 3),
                 "review_status": review_status,
-                "root_paths": root_paths,
                 "evidence": evidence,
             }
         )
 
-    selected_suggestions = [item for item in suggestions if item["review_status"] != "제외"]
-    return selected_suggestions[:3]
+    suggestions.sort(key=lambda item: (item["score"], item["path"]), reverse=True)
+    return suggestions[:8]
 
 
 def build_model_draft(
@@ -181,7 +160,7 @@ def build_model_draft(
         "current_project_name": current_project_name,
         "source_pos_draft_id": source_pos_draft_id,
         "based_on_model_id": model_item["model_id"],
-        "title": f"{current_project_name} 모델 편집 초안",
+        "title": f"{current_project_name} 모델 편집설계 초안",
         "discipline": model_item["discipline"],
         "current_project_attributes": current_attributes,
         "model_hierarchy": hierarchy_items,
@@ -189,28 +168,60 @@ def build_model_draft(
     }
 
 
-def build_hierarchy_rows(hierarchy_items: list[dict], highlighted_paths: set[str] | None = None) -> list[dict]:
-    highlighted_paths = highlighted_paths or set()
+def build_hierarchy_rows(
+    hierarchy_items: list[dict],
+    suggestion_map: dict[str, dict] | None = None,
+    selected_paths: set[str] | None = None,
+) -> list[dict]:
+    suggestion_map = suggestion_map or {}
+    selected_paths = selected_paths or set()
+
     rows = []
     for item in hierarchy_items:
         path = item["path"]
         node_name = item.get("name", path.split("/")[-1])
         level = max(path.count("/") - 1, 0)
+        suggestion = suggestion_map.get(path)
+
         rows.append(
             {
                 "구조레벨": level,
                 "노드코드": item.get("node_code", path.split("/")[-1]),
                 "노드명": node_name,
-                "설계구조": item.get("structure_role", _default_structure_role(path)),
-                "모델경로": path,
+                "설계구조": item.get("design_structure", _default_design_structure(path)),
+                "모델타입": item.get("model_type", item.get("type", "모델 항목")),
+                "사양기준": item.get("spec_basis", "-"),
                 "생성일": item.get("created_on", "2026-03-01"),
-                "생성조직": item.get("organization", _default_organization(path)),
-                "담당설계": item.get("designer", _default_designer(path)),
+                "생성조직": item.get("organization", _default_organization(item)),
+                "담당설계": item.get("designer", _default_designer(item)),
                 "개정": item.get("revision", "R00"),
-                "재활용 제안": "선택 구조" if _is_highlighted(path, highlighted_paths) else "-",
+                "모델경로": path,
+                "재활용 추천": suggestion["review_status"] if suggestion else "-",
+                "재활용 근거": suggestion["evidence"] if suggestion else "-",
+                "선택 상태": "가져오기" if path in selected_paths else "-",
             }
         )
     return rows
+
+
+def _score_evidence_rows(evidence_rows: list[dict]) -> float:
+    score = 0.0
+    for row in evidence_rows:
+        if row["review_status"] == "재활용 적합":
+            score += 1.0
+        elif row["review_status"] == "조건부 검토":
+            score += 0.55
+        elif row["review_status"] == "입력 보완 필요":
+            score += 0.25
+    return score / max(len(evidence_rows), 1)
+
+
+def _to_review_status(score: float) -> str:
+    if score >= 0.8:
+        return "재활용 추천"
+    if score >= 0.55:
+        return "검토 가능"
+    return "참고 가능"
 
 
 def _calculate_gap_ratio(current_value: float, baseline_value: float) -> float:
@@ -228,61 +239,65 @@ def _rename_hierarchy_project(hierarchy_items: list[dict], source_project_name: 
 
 
 def _filter_hierarchy_items(hierarchy_items: list[dict], approved_paths: list[str]) -> list[dict]:
-    return [
-        item
-        for item in hierarchy_items
-        if any(item["path"] == path or item["path"].startswith(f"{path}/") for path in approved_paths)
-    ]
+    approved_set = set(approved_paths)
+    filtered_items = []
+
+    for item in hierarchy_items:
+        path = item["path"]
+        keep = False
+
+        for approved_path in approved_set:
+            if path == approved_path or path.startswith(f"{approved_path}/"):
+                keep = True
+                break
+            if approved_path.startswith(f"{path}/"):
+                keep = True
+                break
+
+        if keep:
+            filtered_items.append(item)
+
+    return filtered_items
 
 
-def _is_highlighted(path: str, highlighted_paths: set[str]) -> bool:
-    return any(path == target_path or path.startswith(f"{target_path}/") for target_path in highlighted_paths)
-
-
-def _default_structure_role(path: str) -> str:
+def _default_design_structure(path: str) -> str:
     upper_path = path.upper()
     if "/HULL" in upper_path:
         return "선체"
-    if "/STEEL-OUTFIT" in upper_path:
+    if "/OUTFIT-STEEL" in upper_path:
         return "의장-철의"
-    if "/JOINERY" in upper_path:
+    if "/OUTFIT-JOINERY" in upper_path:
         return "의장-목의"
-    if "/PIPING" in upper_path:
+    if "/OUTFIT-PIPING" in upper_path:
         return "의장-배관"
-    if "/ELECTRIC" in upper_path:
+    if "/OUTFIT-ELECTRIC" in upper_path:
         return "의장-전장"
-    if "/MACHINERY" in upper_path:
+    if "/OUTFIT-MACHINERY" in upper_path:
         return "의장-기계"
-    if "/OUTFIT" in upper_path:
-        return "의장"
     return "모델 구조"
 
 
-def _default_organization(path: str) -> str:
-    upper_path = path.upper()
-    if "/HULL" in upper_path:
-        return "선체설계부"
-    if "/STEEL-OUTFIT" in upper_path:
-        return "철의설계부"
-    if "/JOINERY" in upper_path:
-        return "목의설계부"
-    if "/PIPING" in upper_path:
-        return "배관설계부"
-    if "/ELECTRIC" in upper_path:
-        return "전장설계부"
-    return "의장설계부"
+def _default_organization(item: dict) -> str:
+    design_structure = item.get("design_structure") or _default_design_structure(item["path"])
+    organization_map = {
+        "선체": "선체설계부",
+        "의장-철의": "철의설계부",
+        "의장-목의": "목의설계부",
+        "의장-배관": "배관설계부",
+        "의장-전장": "전장설계부",
+        "의장-기계": "기계설계부",
+    }
+    return organization_map.get(design_structure, "설계부")
 
 
-def _default_designer(path: str) -> str:
-    upper_path = path.upper()
-    if "/HULL" in upper_path:
-        return "설계자-H"
-    if "/STEEL-OUTFIT" in upper_path:
-        return "설계자-S"
-    if "/JOINERY" in upper_path:
-        return "설계자-J"
-    if "/PIPING" in upper_path:
-        return "설계자-P"
-    if "/ELECTRIC" in upper_path:
-        return "설계자-E"
-    return "설계자-O"
+def _default_designer(item: dict) -> str:
+    design_structure = item.get("design_structure") or _default_design_structure(item["path"])
+    designer_map = {
+        "선체": "설계자 H",
+        "의장-철의": "설계자 S",
+        "의장-목의": "설계자 J",
+        "의장-배관": "설계자 P",
+        "의장-전장": "설계자 E",
+        "의장-기계": "설계자 M",
+    }
+    return designer_map.get(design_structure, "설계자")
