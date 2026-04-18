@@ -1,4 +1,3 @@
-import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -37,16 +36,30 @@ def render_design_plan_management_page() -> None:
 
     st.divider()
     st.subheader("1. MDS 기준 DP 수립 현황")
-    st.altair_chart(_build_mds_dp_overlay_chart(mds_chart_rows, overlay_rows), use_container_width=True)
-    st.caption("빨간 점에는 DP 번호가 표시되고, 점 위치로 MDS 기준 위에서 어떤 DP key event가 수립되었는지 볼 수 있습니다.")
+    st.info("차트는 현재 안정성 확인을 위해 잠시 비활성화했습니다.")
+    st.caption("표준 설계 key event인 MDS를 기준으로, 현재 프로젝트 DP가 어떤 일정으로 수립되었는지 표로 확인할 수 있습니다.")
+
+    overlay_table_rows = [
+        {
+            "설계 Key Event": row["설계 Key Event"],
+            "기준 MDS": row["MDS 작업명"],
+            "DP 번호": next(
+                (item["작업ID"] for item in dp_chart_rows if item["설계 Key Event"] == row["설계 Key Event"]),
+                "-",
+            ),
+            "DP 일정": f"{row['DP 시작일']} ~ {row['DP 종료일']}",
+            "부서": row["부서"],
+        }
+        for row in overlay_rows
+    ]
+    st.dataframe(pd.DataFrame(overlay_table_rows), use_container_width=True, hide_index=True)
 
     st.markdown("#### DP key event와 모델 설계 연계")
     model_link_rows = [
         {
             "DP 번호": row["작업ID"],
             "설계 Key Event": row["설계 Key Event"],
-            "연계 MDS": row["연계 MDS"],
-            "연계 모델 설계": row["연계 모델 설계"],
+            "작업 일자": f"{row['시작일']} ~ {row['종료일']}",
             "부서": row["부서"],
         }
         for row in dp_chart_rows
@@ -81,7 +94,18 @@ def render_design_plan_management_page() -> None:
     rolled_chart_rows = build_schedule_chart_rows(rolled_rows, "롤링 후 DP")
 
     st.markdown("#### 롤링 후 DP")
-    st.altair_chart(_build_schedule_chart(rolled_chart_rows, "롤링 후 DP", highlight_task_id=selected_task_id), use_container_width=True)
+    st.info("차트는 현재 안정성 확인을 위해 잠시 비활성화했습니다.")
+    rolled_table_rows = [
+        {
+            "DP 번호": row["작업ID"],
+            "설계 Key Event": row["설계 Key Event"],
+            "작업 일자": f"{row['시작일']} ~ {row['종료일']}",
+            "부서": row["부서"],
+            "연계 모델 설계": row["연계 모델 설계"],
+        }
+        for row in rolled_chart_rows
+    ]
+    st.dataframe(pd.DataFrame(rolled_table_rows), use_container_width=True, hide_index=True)
 
     st.divider()
     st.subheader("3. 영향 요약")
@@ -104,69 +128,3 @@ def render_design_plan_management_page() -> None:
             st.dataframe(pd.DataFrame(impact_summary["changed_rows"]), use_container_width=True, hide_index=True)
         else:
             st.info("현재 설정에서는 이동된 후속 key event가 없습니다.")
-
-
-def _build_mds_dp_overlay_chart(mds_chart_rows: list[dict], overlay_rows: list[dict]) -> alt.Chart:
-    mds_df = pd.DataFrame(mds_chart_rows)
-    overlay_df = pd.DataFrame(overlay_rows)
-    task_order = list(reversed(mds_df["작업명"].tolist()))
-
-    bar_chart = (
-        alt.Chart(mds_df)
-        .mark_bar(size=24, color="#9fb7cc")
-        .encode(
-            x=alt.X("시작일:T", title="일정", axis=alt.Axis(format="%m-%d")),
-            x2="종료일:T",
-            y=alt.Y("작업명:N", sort=task_order, title="MDS"),
-            tooltip=["작업명", "부서", "시작일", "종료일", "의존관계"],
-        )
-    )
-
-    point_chart = (
-        alt.Chart(overlay_df)
-        .mark_point(size=130, filled=True, color="#d1495b")
-        .encode(
-            x=alt.X("DP 시작일:T", axis=alt.Axis(format="%m-%d")),
-            y=alt.Y("MDS 작업명:N", sort=task_order, title=""),
-            tooltip=["작업ID", "설계 Key Event", "부서", "DP 시작일", "DP 종료일", "연계 모델 설계"],
-        )
-    )
-
-    text_chart = (
-        alt.Chart(overlay_df)
-        .mark_text(align="left", dx=8, dy=-10, color="#8a1c2e", fontSize=11)
-        .encode(
-            x="DP 시작일:T",
-            y=alt.Y("MDS 작업명:N", sort=task_order),
-            text="작업ID:N",
-        )
-    )
-
-    return (bar_chart + point_chart + text_chart).properties(height=360)
-
-
-def _build_schedule_chart(chart_rows: list[dict], title: str, highlight_task_id: str | None = None) -> alt.Chart:
-    dataframe = pd.DataFrame(chart_rows)
-    if dataframe.empty:
-        return alt.Chart(pd.DataFrame({"x": [], "y": []})).mark_point().properties(title=title, height=300)
-
-    dataframe["강조"] = dataframe["작업ID"].apply(
-        lambda task_id: "기준 event" if highlight_task_id and task_id == highlight_task_id else "일반 event"
-    )
-
-    return (
-        alt.Chart(dataframe, title=title)
-        .mark_bar(size=26)
-        .encode(
-            x=alt.X("시작일:T", title="일정", axis=alt.Axis(format="%m-%d")),
-            x2="종료일:T",
-            y=alt.Y("설계 Key Event:N", sort=list(reversed(dataframe["설계 Key Event"].tolist())), title="설계 Key Event"),
-            color=alt.Color(
-                "강조:N",
-                scale=alt.Scale(domain=["기준 event", "일반 event"], range=["#d1495b", "#4c78a8"]),
-                legend=None,
-            ),
-            tooltip=["작업ID", "설계 Key Event", "부서", "시작일", "종료일", "의존관계", "연계 모델 설계"],
-        )
-        .properties(height=max(380, len(chart_rows) * 42))
-    )

@@ -16,6 +16,7 @@ from src.features.spec_search.service import SpecSearchService
 
 
 SEARCH_RESULT_KEY = "spec_search_last_result"
+SEARCH_FLASH_MESSAGE_KEY = "spec_search_flash_message"
 PROJECT_NAME_PATTERN = re.compile(r"^HD\d{4}$")
 
 FIELD_LABELS = {
@@ -41,6 +42,14 @@ def _display_field_name(field_name: str) -> str:
     return FIELD_LABELS.get(field_name, field_name)
 
 
+def _render_description(text: str) -> None:
+    st.caption(text)
+
+
+def _render_mini_title(text: str) -> None:
+    st.markdown(f"#### {text}")
+
+
 def _build_saved_spec_rows(saved_specs: list) -> list[dict]:
     return [
         {
@@ -53,7 +62,7 @@ def _build_saved_spec_rows(saved_specs: list) -> list[dict]:
 
 
 def _render_spec_preview(document) -> None:
-    st.markdown("### 선택한 사양서 미리보기")
+    _render_mini_title("선택한 사양서 미리보기")
 
     summary_col1, summary_col2, summary_col3 = st.columns(3)
     summary_col1.metric("선종", document.ship_type or "-")
@@ -112,8 +121,8 @@ def _render_selected_project_status() -> None:
 
 
 def render_spec_search_page() -> None:
-    st.title("건조사양서 기반 유사 프로젝트 찾기")
-    st.caption(
+    st.title("유사 프로젝트 검색")
+    _render_description(
         "현재 건조사양서를 기준으로 가장 가까운 실적선 프로젝트를 찾고, 이후 POS와 모델 편집설계의 기준 프로젝트로 연결합니다."
     )
 
@@ -122,6 +131,9 @@ def render_spec_search_page() -> None:
     saved_specs = repository.list_all()
 
     _render_selected_project_status()
+    flash_message = st.session_state.pop(SEARCH_FLASH_MESSAGE_KEY, None)
+    if flash_message:
+        st.success(flash_message)
 
     st.subheader(
         "현재 데이터 현황",
@@ -154,8 +166,13 @@ def render_spec_search_page() -> None:
 
     st.divider()
 
-    input_col1, input_col2 = st.columns([1.2, 0.8])
+    input_col1, input_col2 = st.columns([0.8, 1.2])
     with input_col1:
+        _render_mini_title("유사 프로젝트 검색")
+        st.write("1. 현재 건조사양서의 핵심 스펙을 입력합니다.")
+        st.write("2. 유사한 실적선 프로젝트를 찾습니다.")
+
+    with input_col2:
         project_name = st.text_input("프로젝트명", value="HD9001")
         spec_text = st.text_area(
             "주요 키워드 입력",
@@ -168,12 +185,6 @@ def render_spec_search_page() -> None:
         )
         top_k = st.slider("비교 후보 수", min_value=1, max_value=5, value=3)
         run_clicked = st.button("유사 프로젝트 검색 실행", type="primary", use_container_width=True)
-
-    with input_col2:
-        st.subheader("활용 흐름")
-        st.write("1. 현재 건조사양서의 핵심 스펙을 입력합니다.")
-        st.write("2. 유사한 실적선 프로젝트를 찾습니다.")
-        st.write("3. 선택한 실적선 프로젝트를 POS와 모델 편집설계 기준으로 사용합니다.")
 
     if run_clicked:
         if not PROJECT_NAME_PATTERN.fullmatch(project_name.strip().upper()):
@@ -188,6 +199,10 @@ def render_spec_search_page() -> None:
         result = service.search(project_name=normalized_project_name, spec_text=spec_text, top_k=top_k)
         st.session_state[SEARCH_RESULT_KEY] = result
         set_current_spec(normalized_project_name, spec_text, result["query"].attributes)
+        st.session_state[SEARCH_FLASH_MESSAGE_KEY] = (
+            f"현재 프로젝트 `{normalized_project_name}` 기준으로 유사 프로젝트 검색 결과를 갱신했습니다."
+        )
+        st.rerun()
 
     result = st.session_state.get(SEARCH_RESULT_KEY)
     if not result:
@@ -236,9 +251,11 @@ def render_spec_search_page() -> None:
                 "attributes": baseline_doc.attributes,
             }
         )
-        st.success(
-            f"`{baseline_doc.project_name}` 프로젝트를 선택했습니다. 이제 POS 편집설계와 모델 편집설계에서 같은 기준 프로젝트를 바로 사용할 수 있습니다."
+        st.session_state[SEARCH_FLASH_MESSAGE_KEY] = (
+            f"`{baseline_doc.project_name}` 프로젝트를 기준 프로젝트로 연결했습니다. "
+            "이제 POS 편집설계와 모델 편집설계에서 바로 사용할 수 있습니다."
         )
+        st.rerun()
 
     top_doc = selected_result["document"]
     comparison = compare_spec_attributes(result["query"], top_doc)
@@ -261,6 +278,11 @@ def render_spec_search_page() -> None:
         "차이 항목 수",
         len(comparison.get("changed_fields", [])),
         help="항목 이름은 같지만 값이 다른 항목 수입니다.",
+    )
+    _render_description(
+        "현재는 입력한 건조사양서 문장과 기존 실적선 사양서 원문을 공백 기준 토큰으로 나눈 뒤, "
+        "단어 빈도 기반 코사인 유사도로 점수를 계산합니다. "
+        "차후에는 RAG 기반으로 원문 문맥까지 함께 탐색해 더 정교하게 기준 프로젝트를 찾을 수 있습니다."
     )
 
     summary_col1, summary_col2 = st.columns(2)

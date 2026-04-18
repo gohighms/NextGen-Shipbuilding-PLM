@@ -124,6 +124,19 @@ def render_design_change_management_page() -> None:
     )
 
     st.divider()
+    st.subheader("구매 / 생산 영향 검토")
+    decision_col1, decision_col2, decision_col3 = st.columns(3)
+    decision_col1.metric("변경 판단", scenario["supply_decision"]["decision"])
+    decision_col2.metric("고위험 항목", scenario["supply_decision"]["high_risk_count"])
+    decision_col3.metric("영향 항목 수", len(scenario["supply_impact_rows"]))
+    st.info(scenario["supply_decision"]["summary"])
+    st.dataframe(
+        _style_status_rows(pd.DataFrame(scenario["supply_impact_rows"]), "변경 위험도", {"높음"}),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+    st.divider()
     st.subheader("ECO 검토")
     st.dataframe(
         _style_status_rows(pd.DataFrame(scenario["impact_rows"]), "영향도", {"상"}),
@@ -248,6 +261,23 @@ def _render_saved_change_requests(change_repository: DesignChangeRepository) -> 
         st.write(f"- 변경 전: `{selected_item['before_value']}`")
         st.write(f"- 변경 후: `{selected_item['after_value']}`")
         st.write(f"- POS 참조: `{selected_item['pos_reference']}`")
+
+    if selected_item.get("supply_decision"):
+        st.markdown("#### 저장된 구매 / 생산 영향 검토")
+        top_col1, top_col2, top_col3 = st.columns(3)
+        top_col1.metric("변경 판단", selected_item["supply_decision"]["decision"])
+        top_col2.metric("고위험 항목", selected_item["supply_decision"]["high_risk_count"])
+        top_col3.metric("영향 항목 수", len(selected_item.get("supply_impact_rows", [])))
+        st.info(selected_item["supply_decision"]["summary"])
+        st.dataframe(
+            _style_status_rows(
+                pd.DataFrame(selected_item.get("supply_impact_rows", [])),
+                "변경 위험도",
+                {"높음"},
+            ),
+            use_container_width=True,
+            hide_index=True,
+        )
 
     st.markdown("#### 저장된 ECO 검토 내용")
     st.dataframe(

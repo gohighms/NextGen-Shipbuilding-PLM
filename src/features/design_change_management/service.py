@@ -113,6 +113,8 @@ def build_change_scenario(
 ) -> dict:
     impacted_structures = _build_impacted_structures(assumed_model["model_hierarchy"], target_field)
     impact_rows = _build_impact_rows(impacted_structures)
+    supply_impact_rows = _build_supply_impact_rows(assumed_model["model_hierarchy"], target_field)
+    supply_decision = _build_supply_decision(supply_impact_rows)
     revision_rows = _build_revision_rows(request_title, requester)
     lifecycle_rows = _build_lifecycle_rows(requester)
 
@@ -129,6 +131,8 @@ def build_change_scenario(
         "model_reference": assumed_model["base_model_id"],
         "impacted_structures": impacted_structures,
         "impact_rows": impact_rows,
+        "supply_impact_rows": supply_impact_rows,
+        "supply_decision": supply_decision,
         "revision_rows": revision_rows,
         "lifecycle_rows": lifecycle_rows,
     }
@@ -203,6 +207,72 @@ def _build_impact_rows(impacted_structures: list[dict]) -> list[dict]:
             "영향도": "상",
         },
     ]
+
+
+def _build_supply_impact_rows(model_hierarchy: list[dict], target_field: str) -> list[dict]:
+    if target_field != "coordination.pipe_hole":
+        return []
+
+    target_codes = {
+        "PLATE-SS-002": ("현측 외판 002", "자재", "구매 완료", "절단 대기", "높음"),
+        "STIFFENER-LG-002": ("종보강재 002", "자재", "구매 완료", "가공 대기", "중간"),
+        "PIPE-FG-002": ("연료가스 파이프 002", "자재", "발주 진행중", "생산 미착수", "중간"),
+        "PIPE-SUPPORT-002": ("연료가스 파이프 서포트 002", "자재", "발주 전", "생산 미착수", "낮음"),
+        "EQ_FGSS": ("FGSS Package", "기자재", "구매 완료", "설치 전", "낮음"),
+    }
+
+    rows = []
+    existing_codes = {item.get("node_code"): item for item in model_hierarchy}
+    for code, values in target_codes.items():
+        if code.startswith("EQ_") or code in existing_codes:
+            item_name, item_type, purchase_status, production_status, risk_level = values
+            rows.append(
+                {
+                    "영향 항목": item_name,
+                    "유형": item_type,
+                    "구매 현황": purchase_status,
+                    "생산 현황": production_status,
+                    "변경 위험도": risk_level,
+                    "판단 메모": _build_supply_note(purchase_status, production_status),
+                }
+            )
+
+    return rows
+
+
+def _build_supply_note(purchase_status: str, production_status: str) -> str:
+    if purchase_status == "구매 완료":
+        if production_status in {"절단 대기", "가공 대기", "설치 전"}:
+            return "구매는 완료되었으나 현장 반영 전이라 변경 검토는 가능함"
+        return "구매와 생산이 모두 진행되어 변경 비용 검토가 필요함"
+    if purchase_status == "발주 진행중":
+        return "발주 변경 또는 규격 조정 가능 여부를 먼저 확인해야 함"
+    return "구매 이전 단계라 설계 변경 반영이 비교적 수월함"
+
+
+def _build_supply_decision(supply_impact_rows: list[dict]) -> dict:
+    if not supply_impact_rows:
+        return {
+            "decision": "판단 정보 없음",
+            "summary": "구매-생산 영향 정보가 아직 없습니다.",
+            "high_risk_count": 0,
+        }
+
+    high_risk_count = sum(1 for row in supply_impact_rows if row["변경 위험도"] == "높음")
+    completed_purchase_count = sum(1 for row in supply_impact_rows if row["구매 현황"] == "구매 완료")
+
+    if high_risk_count >= 1 and completed_purchase_count >= 2:
+        return {
+            "decision": "주의 후 진행",
+            "summary": "이미 구매 완료된 항목이 포함되어 있어, 설계 변경 전 구매/생산 부서와 사전 협의가 필요합니다.",
+            "high_risk_count": high_risk_count,
+        }
+
+    return {
+        "decision": "진행 가능",
+        "summary": "구매 및 생산 영향은 있으나 현재 단계에서는 설계 변경 검토를 진행할 수 있습니다.",
+        "high_risk_count": high_risk_count,
+    }
 
 
 def _build_revision_rows(request_title: str, requester: str) -> list[dict]:

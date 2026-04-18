@@ -10,7 +10,6 @@ from src.features.model_generation.service import (
     build_model_draft,
     build_model_reuse_suggestions,
     find_models_for_project,
-    summarize_model_similarity,
 )
 from src.features.pos_generation.draft_repository import PosDraftRepository
 
@@ -36,13 +35,13 @@ def render_model_generation_page() -> None:
     )
 
     st.title("유사 프로젝트 기반 모델 편집설계")
-    st.caption("모델은 현재 단계에서 block division 전의 설계구조만을 기준으로 재활용합니다.")
+    st.caption("모델은 현재 단계에서 block division 이전의 설계구조만을 기준으로 재활용합니다.")
 
     selected_project = get_selected_project()
     current_spec = get_current_spec()
 
     if not selected_project or not current_spec:
-        st.info("먼저 `건조사양서 기반 유사 프로젝트 찾기`에서 기준 프로젝트를 선택해 주세요.")
+        st.info("먼저 `유사 프로젝트 검색`에서 기준 프로젝트를 선택해 주세요.")
         return
 
     model_repository = ModelRepository(MODEL_DATA_DIR)
@@ -51,7 +50,7 @@ def render_model_generation_page() -> None:
 
     model_items = find_models_for_project(selected_project, model_repository.list_all())
     if not model_items:
-        st.warning("선택한 기준 프로젝트와 연결된 모델 샘플이 아직 없습니다.")
+        st.warning("선택한 기준 프로젝트에 연결된 모델 샘플이 아직 없습니다.")
         return
 
     related_pos_drafts = [
@@ -61,7 +60,7 @@ def render_model_generation_page() -> None:
     ]
 
     st.subheader("현재 연결 기준")
-    top_col1, top_col2 = st.columns([1, 1])
+    top_col1, top_col2 = st.columns(2)
     with top_col1:
         st.write(f"- 현재 프로젝트: `{current_spec['project_name']}`")
         st.write(f"- 기준 프로젝트: `{selected_project['project_name']}`")
@@ -69,21 +68,23 @@ def render_model_generation_page() -> None:
     with top_col2:
         st.write(f"- 연결된 기준 모델 수: `{len(model_items)}`")
         st.write(f"- 관련 POS 초안 수: `{len(related_pos_drafts)}`")
-        st.write("- 모델 기준: `block division 전 설계구조`")
+        st.write("- 모델 기준: `block division 이전 설계구조`")
 
     selected_pos_draft = None
     if related_pos_drafts:
         st.divider()
         pos_options = ["선택 안 함"] + [item["draft_id"] for item in related_pos_drafts]
         selected_pos_option = st.selectbox(
-            "모델 편집설계에 함께 참고할 POS 초안",
+            "모델 편집설계에서 함께 참고할 POS 초안",
             options=pos_options,
-            format_func=lambda draft_id: "선택 안 함"
-            if draft_id == "선택 안 함"
-            else next(
-                f"{item['title']} ({item['draft_id']})"
-                for item in related_pos_drafts
-                if item["draft_id"] == draft_id
+            format_func=lambda draft_id: (
+                "선택 안 함"
+                if draft_id == "선택 안 함"
+                else next(
+                    f"{item['title']} ({item['draft_id']})"
+                    for item in related_pos_drafts
+                    if item["draft_id"] == draft_id
+                )
             ),
         )
         if selected_pos_option != "선택 안 함":
@@ -99,85 +100,77 @@ def render_model_generation_page() -> None:
         ),
     )
     selected_model = next(item for item in model_items if item["model_id"] == selected_model_id)
-    similarity = summarize_model_similarity(current_spec.get("attributes", {}), selected_model)
 
     st.divider()
-    st.subheader("1. 기준 실적선 모델 구조 분석")
-    info_col1, info_col2, info_col3 = st.columns(3)
-    info_col1.metric("기준 모델", selected_model["model_id"])
-    info_col2.metric("속성 적합도", f"{similarity['score']:.3f}")
-    info_col3.metric("일치 항목 수", similarity["matched_count"])
+    st.subheader("1. 기준 실적선 모델 구조")
+    st.metric("기준 모델", selected_model["model_id"])
 
     structure_rows = build_hierarchy_rows(selected_model.get("model_hierarchy", []))
-    st.dataframe(pd.DataFrame(structure_rows), use_container_width=True, hide_index=True, height=720)
+    structure_df = _format_model_grid(pd.DataFrame(structure_rows), mode="baseline")
+    st.dataframe(
+        structure_df,
+        use_container_width=True,
+        hide_index=True,
+        height=720,
+    )
 
     st.divider()
     st.subheader("2. 모델 재활용 제안")
+    st.caption("시스템이 제안하는 재활용 가능한 모델 구조입니다. 필요한 영역만 선택해 현재 프로젝트의 설계 시작 구조로 가져올 수 있습니다.")
+
     suggestions = build_model_reuse_suggestions(current_spec.get("attributes", {}), selected_model)
     suggestion_map = {item["path"]: item for item in suggestions}
 
     if suggestions:
         suggestion_rows = [
             {
-                "노드코드": item["node_code"],
-                "노드명": item["node_name"],
+                "ID": item["node_code"],
+                "모델명": item["node_name"],
                 "설계구조": item["design_structure"],
                 "모델타입": item["model_type"],
-                "재활용 판단": item["review_status"],
-                "재활용 근거": item["evidence"],
             }
             for item in suggestions
         ]
-        st.dataframe(
-            _style_rows(pd.DataFrame(suggestion_rows), "재활용 판단", {"재활용 추천", "검토 가능"}),
-            use_container_width=True,
-            hide_index=True,
-        )
+        st.dataframe(pd.DataFrame(suggestion_rows), use_container_width=True, hide_index=True)
     else:
-        st.info("현재 스펙 기준으로 바로 제안할 재활용 구조가 없습니다. 아래에서 필요한 구조를 직접 선택할 수 있습니다.")
+        st.info("현재 사양 기준으로 바로 제안할 재활용 구조가 없습니다. 아래에서 필요한 구조를 직접 선택할 수 있습니다.")
 
     st.markdown("#### 기준 모델 구조에서 가져올 항목 선택")
     selection_rows = build_hierarchy_rows(selected_model.get("model_hierarchy", []), suggestion_map=suggestion_map)
     default_selected_paths = {item["path"] for item in suggestions if item["review_status"] == "재활용 추천"}
 
-    selection_df = pd.DataFrame(
-        [
-            {
-                "가져오기": row["모델경로"] in default_selected_paths,
-                "노드코드": row["노드코드"],
-                "노드명": row["노드명"],
-                "설계구조": row["설계구조"],
-                "모델타입": row["모델타입"],
-                "생성조직": row["생성조직"],
-                "모델경로": row["모델경로"],
-                "재활용 추천": row["재활용 추천"],
-                "재활용 근거": row["재활용 근거"],
-            }
-            for row in selection_rows
-        ]
+    selection_df = _format_model_grid(pd.DataFrame(selection_rows), mode="baseline")
+    selection_paths = selection_df["모델경로"].tolist()
+    selection_editor_df = selection_df[["ID", "모델명", "설계구조", "모델타입", "생성조직"]].copy()
+    selection_editor_df.insert(
+        0,
+        "선택",
+        [path in default_selected_paths for path in selection_paths],
     )
 
     edited_selection_df = st.data_editor(
-        selection_df,
+        selection_editor_df,
         use_container_width=True,
         hide_index=True,
-        height=520,
+        height=680,
         column_config={
-            "가져오기": st.column_config.CheckboxColumn(
-                "가져오기",
-                help="체크한 구조만 현재 프로젝트 모델 편집설계 시작 구조로 가져옵니다.",
-            ),
+            "선택": st.column_config.CheckboxColumn("선택", width="small"),
         },
-        disabled=["노드코드", "노드명", "설계구조", "모델타입", "생성조직", "모델경로", "재활용 추천", "재활용 근거"],
+        disabled=["ID", "모델명", "설계구조", "모델타입", "생성조직"],
+        key=f"model_selection_editor_{selected_model['model_id']}",
     )
 
-    selected_paths = edited_selection_df.loc[edited_selection_df["가져오기"], "모델경로"].tolist()
+    selected_paths = [
+        path
+        for path, checked in zip(selection_paths, edited_selection_df["선택"].tolist())
+        if checked
+    ]
 
     st.divider()
-    st.subheader("3. 현재 프로젝트 모델 편집설계 시작")
+    st.subheader("3. 모델 편집설계")
     if not selected_paths:
         st.info("가져올 구조를 하나 이상 선택하면 아래에서 현재 프로젝트 시작 구조를 볼 수 있습니다.")
-        st.caption("시스템 추천은 기본 체크되어 있지만, 사용자가 필요에 따라 직접 조정할 수 있습니다.")
+        st.caption("시스템 추천은 기본으로 체크되지만, 실제 적용 범위는 사용자가 직접 조정할 수 있습니다.")
         return
 
     draft = build_model_draft(
@@ -196,15 +189,15 @@ def render_model_generation_page() -> None:
             "Change Note",
             height=180,
             value=(
-                f"{selected_project['project_name']} 기준 모델에서 설계구조 일부를 재활용하여 "
+                f"{selected_project['project_name']} 기준 모델에서 필요한 구조를 재활용하여 "
                 f"{current_spec['project_name']} 모델 편집설계를 시작."
             ),
         )
         st.write(f"- 새 모델 ID: `{draft['new_model_id']}`")
         st.write(f"- 기준 프로젝트: `{draft['source_project_name']}`")
         st.write(f"- 재활용 기준 모델: `{draft['based_on_model_id']}`")
-        st.write(f"- 선택 구조 수: `{len(selected_paths)}`")
-        st.write(f"- 반영 노드 수: `{draft['selected_structure_count']}`")
+        st.write(f"- 선택 영역: `{len(selected_paths)}`")
+        st.write(f"- 전체 영역: `{draft['selected_structure_count']}`")
 
         final_draft = {
             **draft,
@@ -218,24 +211,18 @@ def render_model_generation_page() -> None:
 
     with edit_col2:
         st.markdown("#### 현재 프로젝트 시작 구조")
-        converted_selected_paths = {
-            path.replace(
-                f"PROJECT/{selected_project['project_name']}",
-                f"PROJECT/{current_spec['project_name']}",
-                1,
-            )
-            for path in selected_paths
-        }
+        converted_selected_paths = _convert_paths_to_current_project(
+            selected_paths,
+            selected_project["project_name"],
+            current_spec["project_name"],
+        )
         current_rows = build_hierarchy_rows(
             draft.get("model_hierarchy", []),
             selected_paths=converted_selected_paths,
         )
-        st.dataframe(
-            _style_rows(pd.DataFrame(current_rows), "선택 상태", {"가져오기"}),
-            use_container_width=True,
-            hide_index=True,
-            height=720,
-        )
+        visible_current_rows = _filter_rows_by_paths(current_rows, converted_selected_paths)
+        current_df = _format_model_grid(pd.DataFrame(visible_current_rows), mode="current")
+        st.table(_style_model_table(current_df))
 
     st.caption(
         "이 화면은 이전 프로젝트의 유사한 모델 구조를 최대한 재활용하여, "
@@ -244,15 +231,6 @@ def render_model_generation_page() -> None:
 
     st.divider()
     _render_saved_model_drafts(model_draft_repository, current_spec["project_name"])
-
-
-def _style_rows(dataframe: pd.DataFrame, status_column: str, highlighted_statuses: set[str]):
-    def highlight_row(row):
-        if row[status_column] in highlighted_statuses:
-            return ["background-color: #fff7cc; color: #111111"] * len(row)
-        return [""] * len(row)
-
-    return dataframe.style.apply(highlight_row, axis=1)
 
 
 def _render_saved_model_drafts(model_draft_repository: ModelDraftRepository, current_project_name: str) -> None:
@@ -290,7 +268,7 @@ def _render_saved_model_drafts(model_draft_repository: ModelDraftRepository, cur
     )
     selected_item = next(item for item in draft_items if item["draft_id"] == selected_draft_id)
 
-    detail_col1, detail_col2 = st.columns([1, 1])
+    detail_col1, detail_col2 = st.columns(2)
     with detail_col1:
         st.write(f"- 초안 ID: `{selected_item['draft_id']}`")
         st.write(f"- 모델명: `{selected_item['title']}`")
@@ -301,12 +279,92 @@ def _render_saved_model_drafts(model_draft_repository: ModelDraftRepository, cur
         st.markdown("#### Change Note")
         st.write(selected_item["change_note"])
 
-    highlighted_paths = set(selected_item.get("selected_structure_paths", []))
-    st.markdown("#### 저장된 최종 구조")
-    saved_rows = build_hierarchy_rows(selected_item.get("model_hierarchy", []), selected_paths=highlighted_paths)
-    st.dataframe(
-        _style_rows(pd.DataFrame(saved_rows), "선택 상태", {"가져오기"}),
-        use_container_width=True,
-        hide_index=True,
-        height=720,
+    highlighted_paths = _convert_paths_to_current_project(
+        selected_item.get("selected_structure_paths", []),
+        selected_item.get("source_project_name", current_project_name),
+        selected_item.get("current_project_name", current_project_name),
     )
+    st.markdown("#### 저장된 최종 구조")
+    saved_rows = build_hierarchy_rows(
+        selected_item.get("model_hierarchy", []),
+        selected_paths=highlighted_paths,
+    )
+    visible_saved_rows = _filter_rows_by_paths(saved_rows, highlighted_paths)
+    saved_df = _format_model_grid(pd.DataFrame(visible_saved_rows), mode="current")
+    st.table(_style_model_table(saved_df))
+
+
+def _convert_paths_to_current_project(paths: list[str], source_project_name: str, target_project_name: str) -> set[str]:
+    return {
+        path.replace(f"PROJECT/{source_project_name}", f"PROJECT/{target_project_name}", 1)
+        for path in paths
+    }
+
+
+def _filter_rows_by_paths(rows: list[dict], selected_paths: set[str]) -> list[dict]:
+    if not selected_paths:
+        return []
+    return [row for row in rows if row.get("모델경로") in selected_paths]
+
+
+def _format_model_grid(dataframe: pd.DataFrame, mode: str) -> pd.DataFrame:
+    if dataframe.empty:
+        if mode == "current":
+            return pd.DataFrame(columns=["구조레벨", "ID", "모델명", "설계구조", "모델타입", "생성조직", "선택"])
+        return pd.DataFrame(
+            columns=[
+                "구조레벨",
+                "ID",
+                "모델명",
+                "설계구조",
+                "모델타입",
+                "생성일",
+                "생성조직",
+                "담당설계",
+                "개정",
+                "모델경로",
+            ]
+        )
+
+    if mode == "current":
+        base_columns = {
+            "구조레벨": "구조레벨",
+            "노드코드": "ID",
+            "노드명": "모델명",
+            "설계구조": "설계구조",
+            "모델타입": "모델타입",
+            "생성조직": "생성조직",
+        }
+        if "선택 상태" in dataframe.columns:
+            base_columns["선택 상태"] = "선택"
+    else:
+        base_columns = {
+            "구조레벨": "구조레벨",
+            "노드코드": "ID",
+            "노드명": "모델명",
+            "설계구조": "설계구조",
+            "모델타입": "모델타입",
+            "생성일": "생성일",
+            "생성조직": "생성조직",
+            "담당설계": "담당설계",
+            "개정": "개정",
+            "모델경로": "모델경로",
+        }
+
+    formatted = dataframe[list(base_columns.keys())].rename(columns=base_columns)
+    if "선택" in formatted.columns:
+        formatted["선택"] = formatted["선택"].apply(lambda value: "✓" if value == "가져오기" else "")
+    return formatted.astype(str)
+
+
+def _build_checkbox_key(model_id: str, model_path: str) -> str:
+    return f"model_reuse_{model_id}_{model_path.replace('/', '_')}"
+
+
+def _style_model_table(dataframe: pd.DataFrame):
+    def highlight_row(row: pd.Series) -> list[str]:
+        if row.get("선택") == "✓":
+            return ["background-color: #fff7cc; color: #111111"] * len(row)
+        return [""] * len(row)
+
+    return dataframe.style.apply(highlight_row, axis=1)
