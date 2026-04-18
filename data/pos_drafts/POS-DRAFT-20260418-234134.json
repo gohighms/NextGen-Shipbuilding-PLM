@@ -1,6 +1,6 @@
 {
-  "draft_id": "POS-DRAFT-20260418-211656",
-  "saved_at": "2026-04-18 21:16:56",
+  "draft_id": "POS-DRAFT-20260418-234134",
+  "saved_at": "2026-04-18 23:41:34",
   "change_note": "HD1001 POS를 기준으로 가져오고 HD9001 사양 차이를 반영해 문구를 수정할 예정.",
   "new_pos_id": "POS-HD9001-001",
   "source_project_spec_id": "LNGC-241K-001",

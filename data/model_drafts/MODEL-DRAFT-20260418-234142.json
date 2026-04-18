@@ -1,12 +1,12 @@
 {
-  "draft_id": "MODEL-DRAFT-20260418-211713",
-  "saved_at": "2026-04-18 21:17:13",
+  "draft_id": "MODEL-DRAFT-20260418-234142",
+  "saved_at": "2026-04-18 23:41:42",
   "change_note": "HD1001 기준 모델에서 필요한 구조를 재활용하여 HD9001 모델 편집설계를 시작.",
   "new_model_id": "MODEL-HD9001-001",
   "source_project_spec_id": "LNGC-241K-001",
   "source_project_name": "HD1001",
   "current_project_name": "HD9001",
-  "source_pos_draft_id": "",
+  "source_pos_draft_id": "POS-DRAFT-20260418-234134",
   "based_on_model_id": "MODEL-HD1001-001",
   "title": "HD9001 모델 편집설계 초안",
   "discipline": "선체/의장 통합",
@@ -128,31 +128,6 @@
       ]
     },
     {
-      "path": "PROJECT/HD9001/HULL/DECK-STRUCTURE",
-      "node_code": "DECK-STRUCTURE",
-      "name": "갑판 구조",
-      "type": "Assembly",
-      "design_structure": "선체",
-      "model_type": "갑판 구조"
-    },
-    {
-      "path": "PROJECT/HD9001/HULL/DECK-STRUCTURE/MAIN-DECK",
-      "node_code": "MAIN-DECK",
-      "name": "상갑판",
-      "type": "Assembly",
-      "design_structure": "선체",
-      "model_type": "플레이트 묶음"
-    },
-    {
-      "path": "PROJECT/HD9001/HULL/DECK-STRUCTURE/MAIN-DECK/PLATE-MD-001",
-      "node_code": "PLATE-MD-001",
-      "name": "상갑판 001",
-      "type": "Part",
-      "design_structure": "선체",
-      "model_type": "플레이트",
-      "spec_basis": "Breadth 반영"
-    },
-    {
       "path": "PROJECT/HD9001/OUTFIT-STEEL",
       "node_code": "OUTFIT-STEEL",
       "name": "의장-철의",
@@ -190,39 +165,6 @@
       "spec_basis": "메인 엔진 기자재 반영"
     },
     {
-      "path": "PROJECT/HD9001/OUTFIT-JOINERY",
-      "node_code": "OUTFIT-JOINERY",
-      "name": "의장-목의",
-      "type": "Discipline",
-      "design_structure": "의장-목의",
-      "model_type": "설계구조"
-    },
-    {
-      "path": "PROJECT/HD9001/OUTFIT-JOINERY/LIVING-SPACE",
-      "node_code": "LIVING-SPACE",
-      "name": "거주구",
-      "type": "Assembly",
-      "design_structure": "의장-목의",
-      "model_type": "내장 구조"
-    },
-    {
-      "path": "PROJECT/HD9001/OUTFIT-JOINERY/LIVING-SPACE/CABIN-WALL",
-      "node_code": "CABIN-WALL",
-      "name": "캐빈 벽체",
-      "type": "Assembly",
-      "design_structure": "의장-목의",
-      "model_type": "패널 묶음"
-    },
-    {
-      "path": "PROJECT/HD9001/OUTFIT-JOINERY/LIVING-SPACE/CABIN-WALL/PANEL-JR-001",
-      "node_code": "PANEL-JR-001",
-      "name": "캐빈 벽체 패널 001",
-      "type": "Part",
-      "design_structure": "의장-목의",
-      "model_type": "패널",
-      "spec_basis": "거주구 표준"
-    },
-    {
       "path": "PROJECT/HD9001/OUTFIT-PIPING",
       "node_code": "OUTFIT-PIPING",
       "name": "의장-배관",
@@ -252,46 +194,6 @@
       ]
     },
     {
-      "path": "PROJECT/HD9001/OUTFIT-PIPING/FUEL-GAS-LINE/FLANGE-FG-001",
-      "node_code": "FLANGE-FG-001",
-      "name": "연료가스 플렌지 001",
-      "type": "Part",
-      "design_structure": "의장-배관",
-      "model_type": "플렌지",
-      "spec_basis": "메인 엔진 기자재 반영"
-    },
-    {
-      "path": "PROJECT/HD9001/OUTFIT-PIPING/CARGO-LINE",
-      "node_code": "CARGO-LINE",
-      "name": "화물 라인",
-      "type": "Assembly",
-      "design_structure": "의장-배관",
-      "model_type": "배관 묶음",
-      "spec_basis": "화물창 용적 반영",
-      "reuse_hint_fields": [
-        "cargo_system.cargo_capacity_m3",
-        "cargo_system.cargo_tank_system"
-      ]
-    },
-    {
-      "path": "PROJECT/HD9001/OUTFIT-PIPING/CARGO-LINE/PIPE-CG-001",
-      "node_code": "PIPE-CG-001",
-      "name": "화물 파이프 001",
-      "type": "Part",
-      "design_structure": "의장-배관",
-      "model_type": "파이프",
-      "spec_basis": "화물창 용적 반영"
-    },
-    {
-      "path": "PROJECT/HD9001/OUTFIT-PIPING/CARGO-LINE/VALVE-CG-001",
-      "node_code": "VALVE-CG-001",
-      "name": "화물 밸브 001",
-      "type": "Part",
-      "design_structure": "의장-배관",
-      "model_type": "밸브",
-      "spec_basis": "화물창 용적 반영"
-    },
-    {
       "path": "PROJECT/HD9001/OUTFIT-ELECTRIC",
       "node_code": "OUTFIT-ELECTRIC",
       "name": "의장-전장",
@@ -319,15 +221,6 @@
       "reuse_hint_fields": [
         "machinery.main_engine"
       ]
-    },
-    {
-      "path": "PROJECT/HD9001/OUTFIT-ELECTRIC/POWER-DISTRIBUTION/PANEL-001",
-      "node_code": "PANEL-001",
-      "name": "전장 패널 001",
-      "type": "Part",
-      "design_structure": "의장-전장",
-      "model_type": "패널",
-      "spec_basis": "메인 엔진 기자재 반영"
     },
     {
       "path": "PROJECT/HD9001/OUTFIT-MACHINERY",
@@ -367,13 +260,11 @@
       "spec_basis": "메인 엔진 기자재 반영"
     }
   ],
-  "selected_structure_count": 36,
+  "selected_structure_count": 24,
   "selected_structure_paths": [
-    "PROJECT/HD1001",
     "PROJECT/HD1001/HULL/SHELL-PLATING/SIDE-SHELL/PLATE-SS-001",
     "PROJECT/HD1001/HULL/SHELL-PLATING/BOTTOM-SHELL/PLATE-BS-001",
     "PROJECT/HD1001/HULL/INTERNAL-STRUCTURE/LONGITUDINAL-MEMBER/STIFFENER-LG-001",
-    "PROJECT/HD1001/HULL/DECK-STRUCTURE/MAIN-DECK/PLATE-MD-001",
     "PROJECT/HD1001/OUTFIT-STEEL/FOUNDATION/MAIN-ENGINE-SEAT",
     "PROJECT/HD1001/OUTFIT-PIPING/FUEL-GAS-LINE/PIPE-FG-001",
     "PROJECT/HD1001/OUTFIT-ELECTRIC/POWER-DISTRIBUTION/CABLE-TRAY-001",

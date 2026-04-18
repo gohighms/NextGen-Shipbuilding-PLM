@@ -157,32 +157,43 @@ def _render_sidebar_status() -> None:
         st.sidebar.caption(f"현재 프로젝트: `{current_spec['project_name']}`")
 
 
-def _scroll_to_top_if_page_changed(page_name: str) -> None:
+def _scroll_to_top_if_page_changed(navigation_id: str) -> bool:
     previous_page = st.session_state.get(NAVIGATION_STATE_KEY)
-    st.session_state[NAVIGATION_STATE_KEY] = page_name
+    st.session_state[NAVIGATION_STATE_KEY] = navigation_id
 
-    if previous_page and previous_page != page_name:
-        components.html(
-            """
-            <script>
-            const scrollTopNow = () => {
-                window.parent.scrollTo({top: 0, left: 0, behavior: "instant"});
-                const parentDoc = window.parent.document;
-                const appView = parentDoc.querySelector('[data-testid="stAppViewContainer"]');
-                const mainSection = parentDoc.querySelector('section.main');
-                const blockContainer = parentDoc.querySelector('.main .block-container');
+    if previous_page and previous_page != navigation_id:
+        _inject_scroll_to_top_script()
+        return True
+    return False
 
-                if (appView) appView.scrollTop = 0;
-                if (mainSection) mainSection.scrollTop = 0;
-                if (blockContainer) blockContainer.scrollTop = 0;
-            };
 
-            scrollTopNow();
-            setTimeout(scrollTopNow, 30);
-            </script>
-            """,
-            height=0,
-        )
+def _inject_scroll_to_top_script() -> None:
+    components.html(
+        """
+        <script>
+        const scrollTopNow = () => {
+            window.parent.scrollTo({top: 0, left: 0, behavior: "auto"});
+            const parentDoc = window.parent.document;
+            const appView = parentDoc.querySelector('[data-testid="stAppViewContainer"]');
+            const mainSection = parentDoc.querySelector('section.main');
+            const blockContainer = parentDoc.querySelector('.main .block-container');
+            const mainElement = parentDoc.querySelector('[data-testid="stMain"]');
+
+            if (appView) appView.scrollTop = 0;
+            if (mainSection) mainSection.scrollTop = 0;
+            if (blockContainer) blockContainer.scrollTop = 0;
+            if (mainElement) mainElement.scrollTop = 0;
+        };
+
+        scrollTopNow();
+        requestAnimationFrame(scrollTopNow);
+        setTimeout(scrollTopNow, 30);
+        setTimeout(scrollTopNow, 120);
+        setTimeout(scrollTopNow, 260);
+        </script>
+        """,
+        height=0,
+    )
 
 
 def main() -> None:
@@ -210,9 +221,12 @@ def main() -> None:
         page_name = st.sidebar.radio("세부 기능", list(THREAD_PAGES.keys()))
         render_page = THREAD_PAGES[page_name]
 
-    _scroll_to_top_if_page_changed(page_name)
+    navigation_id = f"{area_name}::{page_name}"
+    page_changed = _scroll_to_top_if_page_changed(navigation_id)
     _render_sidebar_status()
     render_page()
+    if page_changed:
+        _inject_scroll_to_top_script()
 
 
 if __name__ == "__main__":
