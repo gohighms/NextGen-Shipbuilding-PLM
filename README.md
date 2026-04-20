@@ -1,69 +1,139 @@
-## NextGen Shipbuilding PLM
+# NextGen Shipbuilding PLM
 
-This repository is set up so multiple PLM features can be added over time.
-The first feature in place is a shipbuilding specification search and comparison screen.
+이 프로젝트는 조선 PLM을 한 번에 모두 구현하는 것이 아니라,  
+`건조사양서 → 설계 → BOM → 디지털 쓰레드`로 이어지는 흐름을 이해하기 쉽게 보여주는 **개념 데모**입니다.
 
-### Project layout
+복잡한 조선 업무를 처음 보는 사람도,
+- 어떤 정보가 먼저 만들어지고
+- 그 정보가 다음 단계로 어떻게 이어지며
+- 나중에 어떻게 추적될 수 있는지
 
-```text
-.
-|-- apps/
-|   `-- main_app.py
-|-- data/
-|   |-- embeddings/
-|   |   `-- .gitkeep
-|   |-- processed/
-|   |   `-- sample_lngc_spec.json
-|   `-- raw/
-|       `-- .gitkeep
-|-- docs/
-|   `-- spec-comparison-architecture.md
-|-- src/
-|   |-- common/
-|   |   `-- paths.py
-|   `-- features/
-|   `-- features/
-|       `-- spec_search/
-|           |-- compare.py
-|           |-- models.py
-|           |-- repository.py
-|           |-- service.py
-|           |-- similarity.py
-|           `-- ui.py
-|-- tests/
-|   `-- test_spec_search.py
-`-- requirements.txt
-```
+한 화면씩 따라가면서 이해할 수 있도록 만드는 것이 목표입니다.
 
-### Why this layout
+## 이 프로젝트에서 보여주는 큰 흐름
 
-- `apps/` keeps app entrypoints only.
-- `src/common/` is for shared paths, settings, and helpers.
-- `src/features/` is where feature-specific code lives.
-- New PLM functions can be added as another feature folder.
+이 데모는 아래 순서로 생각하면 쉽습니다.
 
-Possible future feature folders:
+1. **실적선 기반 설계 재활용**
+   - 현재 프로젝트와 비슷한 실적선을 찾습니다.
+   - 그 실적선을 기준으로 POS와 모델 편집설계를 시작합니다.
 
-- `src/features/spec_search/`
-- `src/features/bom_review/`
-- `src/features/change_impact/`
-- `src/features/document_parser/`
+2. **프로젝트 관리**
+   - 설계계획(DP)을 관리합니다.
+   - 설계 변경이 생겼을 때 어떤 영향이 있는지 봅니다.
 
-### Current feature
+3. **통합 BOM 관리**
+   - 모델 구조를 Block Division으로 나눕니다.
+   - MBOM, WBOM처럼 목적별로 다른 BOM View를 만듭니다.
 
-- Read saved spec JSON files
-- Calculate simple text similarity
-- Compare major attributes
-- Review results in Streamlit
+4. **디지털 쓰레드**
+   - TAG를 만들고,
+   - 온톨로지/지식그래프로 의미 관계를 보고,
+   - AI 지식 어시스턴트로 질문해보는 데모를 보여줍니다.
 
-### 실행
+---
+
+## 메뉴 설명
+
+### 1. 실적선 기반 설계 재활용
+
+이 영역은 “이전 프로젝트를 얼마나 잘 재활용할 수 있는가?”를 보여줍니다.
+
+- **유사 프로젝트 검색**
+  - 현재 건조사양서를 바탕으로 가장 가까운 실적선을 찾습니다.
+- **POS 사양 복구**
+  - 기준 실적선 POS를 바탕으로 현재 프로젝트 POS 초안을 만듭니다.
+- **모델 편집설계**
+  - 기준 실적선 모델 구조 중 필요한 부분을 골라 현재 프로젝트 설계 시작 구조를 만듭니다.
+
+### 2. 프로젝트 관리
+
+이 영역은 현재 프로젝트가 진행되면서 생기는 관리 요소를 보여줍니다.
+
+- **설계 계획 관리**
+  - MDS 기준으로 DP를 만들고, 롤링 시뮬레이션으로 계획 변화를 봅니다.
+- **설계 변경 관리**
+  - 변경 요청이 생겼을 때, 설계/BOM/구매/생산 영향까지 함께 판단합니다.
+
+### 3. 통합 BOM 관리
+
+이 영역은 모델을 생산 관점으로 다시 보는 흐름입니다.
+
+- **Block Division**
+  - Surface / Solid 모델에서 Block 구조가 어떻게 정리되는지 보여줍니다.
+- **MBOM 생성**
+  - 모델 구조를 블록과 조립단계 관점으로 재구성합니다.
+- **WBOM 생성**
+  - MBOM에 작업 지원 요소를 더한 작업 관점 View를 만듭니다.
+
+### 4. 디지털 쓰레드
+
+이 영역은 “정보가 어떻게 연결되는가”를 보여줍니다.
+
+- **TAG 관리**
+  - 건조사양서에서 TAG를 생성하고, POS/모델/BOM과 연결되는 사례를 봅니다.
+- **온톨로지 / 지식그래프**
+  - 의미 관계를 그래프로 보면서, 왜 각 요소가 연결되는지 이해합니다.
+- **AI 지식 어시스턴트**
+  - 현재 만들어진 RAG 근거를 바탕으로 질문하고 답변받는 데모입니다.
+
+---
+
+## 이 프로젝트의 핵심 철학
+
+이 데모는 아래 생각을 바탕으로 구성되어 있습니다.
+
+- **TAG는 이름표다.**
+  - 추적과 연결의 기준점 역할을 합니다.
+
+- **온톨로지는 의미 관계다.**
+  - 어떤 요소가 왜 연결되는지를 설명합니다.
+
+- **모델과 BOM은 같은 대상을 다른 목적에서 보는 View다.**
+  - 설계 관점의 모델이 있고,
+  - 생산/작업 관점의 BOM View가 따로 있습니다.
+
+- **디지털 쓰레드는 결과물이 아니라 흐름이다.**
+  - 건조사양서, POS, 모델, BOM, 변경, 구매, 생산이 따로 노는 것이 아니라
+    하나의 흐름 안에서 이어진다는 것을 보여주는 것이 중요합니다.
+
+---
+
+## 실행 방법
+
+가상환경이 준비되어 있다면 아래처럼 실행하면 됩니다.
 
 ```bash
 streamlit run apps/main_app.py
 ```
 
-### Suggested next steps
+---
 
-1. Add at least three real sample specifications in the same format
-2. Define the standard field list to compare
-3. Move from raw text matching to field-based comparison
+## OpenAI 연계
+
+AI 지식 어시스턴트는 두 가지 방식으로 동작할 수 있습니다.
+
+1. **로컬 RAG 기반 답변**
+   - 현재 프로젝트 데이터 안에서 근거를 찾아 답변합니다.
+
+2. **OpenAI API 기반 답변**
+   - 로컬 RAG 근거를 바탕으로 OpenAI가 더 자연스러운 답변을 생성합니다.
+
+OpenAI를 쓰려면 `.env` 파일에 아래처럼 넣으면 됩니다.
+
+```env
+OPENAI_API_KEY=your_api_key
+OPENAI_MODEL=gpt-4.1-mini
+```
+
+---
+
+## 현재 상태
+
+이 프로젝트는 실무 시스템 완제품이 아니라,  
+조선 PLM의 큰 흐름을 설명하고 설득하기 위한 데모입니다.
+
+즉,
+- 실제 현업 개념을 최대한 반영하면서도
+- 처음 보는 사람도 이해할 수 있게
+- 시각화와 흐름 중심으로 정리한 프로젝트라고 보면 됩니다.
