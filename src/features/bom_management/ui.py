@@ -704,7 +704,7 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
 
     text_layer = (
         alt.Chart(node_df)
-        .mark_text(color="white", fontSize=10, fontWeight="bold")
+        .mark_text(color="gray", fontSize=10, fontWeight="bold")
         .encode(
             x="x:Q",
             y="y:Q",
