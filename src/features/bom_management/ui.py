@@ -669,7 +669,7 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
 
     edge_layer = (
         alt.Chart(edge_df)
-        .mark_rule(color="#cbd5e1", strokeWidth=2)
+        .mark_rule(color="#595d61", strokeWidth=2)
         .encode(
             x=alt.X("x:Q", axis=alt.Axis(values=[0, 1, 2], labelAngle=0, title=None, labels=False, ticks=False)),
             y=alt.Y("y:Q", axis=None),
