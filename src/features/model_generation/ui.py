@@ -34,14 +34,14 @@ def render_model_generation_page() -> None:
         unsafe_allow_html=True,
     )
 
-    st.title("유사 프로젝트 기반 모델 편집설계")
-    st.caption("모델은 현재 단계에서 block division 이전의 설계구조만을 기준으로 재활용합니다.")
+    st.title("모델 편집설계")
+    st.caption("기준 실적선 모델로부터 재사용 가능한 부분을 활용하여 편집 설계 초안을 작성합니다.")
 
     selected_project = get_selected_project()
     current_spec = get_current_spec()
 
     if not selected_project or not current_spec:
-        st.info("먼저 `유사 프로젝트 검색`에서 기준 프로젝트를 선택해 주세요.")
+        st.info("먼저 `유사 프로젝트 탐색`에서 기준 프로젝트를 선택해 주세요.")
         return
 
     model_repository = ModelRepository(MODEL_DATA_DIR)

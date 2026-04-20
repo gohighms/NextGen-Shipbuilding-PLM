@@ -33,14 +33,14 @@ def render_pos_generation_page() -> None:
         unsafe_allow_html=True,
     )
 
-    st.title("유사 프로젝트 기반 POS 편집설계")
-    st.caption("선택한 유사 프로젝트의 POS를 기준으로 현재 프로젝트 POS 초안을 편집설계합니다.")
+    st.title("POS 사양 재구성")
+    st.caption("선택한 유사 프로젝트의 POS를 기준으로 현재 프로젝트 POS 초안을 재구성합니다.")
 
     selected_project = get_selected_project()
     current_spec = get_current_spec()
 
     if not selected_project or not current_spec:
-        st.info("먼저 `건조사양서 기반 유사 프로젝트 찾기`에서 기준 프로젝트를 선택해 주세요.")
+        st.info("먼저 `유사 프로젝트 탐색`에서 기준 프로젝트를 선택해 주세요.")
         return
 
     pos_repository = PosRepository(POS_DATA_DIR)

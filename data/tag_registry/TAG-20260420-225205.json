@@ -1,0 +1,208 @@
+{
+  "registry_id": "TAG-20260420-225205",
+  "saved_at": "2026-04-20 22:52:05",
+  "source_type": "reuse_flow",
+  "source_name": "HD9001",
+  "tag_count": 30,
+  "attributes": {
+    "basic_info": {
+      "ship_type_hint": "LNGC"
+    },
+    "principal_dimensions": {
+      "loa_m": 299.0,
+      "breadth_m": 46.4,
+      "draft_m": 11.5
+    },
+    "performance": {
+      "service_speed_kn": 19.5
+    },
+    "cargo_system": {
+      "cargo_capacity_m3": 241000
+    },
+    "machinery": {
+      "main_engine": "ME-GI"
+    }
+  },
+  "tags": [
+    {
+      "section": "basic_info",
+      "field_name": "basic_info.ship_type_hint",
+      "value": "LNGC",
+      "tag_name": "SB-BAS-SHIPTYPE-LNGC"
+    },
+    {
+      "section": "basic_info",
+      "field_name": "basic_info.ship_type_hint",
+      "value": "LNGC",
+      "tag_name": "SB-BAS-YARD-HD1001"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.cargo_tank_system",
+      "value": "GTT Mark III Flex",
+      "tag_name": "SB-CGO-BARR-GTT-MARK-III-FLEX"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.cargo_capacity_m3",
+      "value": 241000,
+      "tag_name": "SB-CGO-CAPA-241000"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.cargo_capacity_m3",
+      "value": 241000,
+      "tag_name": "SB-CGO-INSUL-241000"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.cargo_tank_system",
+      "value": "GTT Mark III Flex",
+      "tag_name": "SB-CGO-MEM-GTT-MARK-III-FLEX-A"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.cargo_capacity_m3",
+      "value": 241000,
+      "tag_name": "SB-CGO-TANK-241000-A"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.cargo_capacity_m3",
+      "value": 241000,
+      "tag_name": "SB-CGO-TANK-241000-B"
+    },
+    {
+      "section": "cargo_system",
+      "field_name": "cargo_system.cargo_tank_system",
+      "value": "GTT Mark III Flex",
+      "tag_name": "SB-CGO-TANKSYS-GTT-MARK-III-FLEX"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.draft_m",
+      "value": 11.5,
+      "tag_name": "SB-DIM-BOTTOMWEB-11-5"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.breadth_m",
+      "value": 46.4,
+      "tag_name": "SB-DIM-BREADTH-46-4"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.loa_m",
+      "value": 299.0,
+      "tag_name": "SB-DIM-DECK-299-0"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.draft_m",
+      "value": 11.5,
+      "tag_name": "SB-DIM-DRAFT-11-5"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.loa_m",
+      "value": 299.0,
+      "tag_name": "SB-DIM-LOA-299-0"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.breadth_m",
+      "value": 46.4,
+      "tag_name": "SB-DIM-SIDESPACE-46-4"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.draft_m",
+      "value": 11.5,
+      "tag_name": "SB-HUL-BOTSHELL-11-5"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.breadth_m",
+      "value": 46.4,
+      "tag_name": "SB-HUL-BRKT-46-4-A"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.breadth_m",
+      "value": 46.4,
+      "tag_name": "SB-HUL-BRKT-46-4-B"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.loa_m",
+      "value": 299.0,
+      "tag_name": "SB-HUL-GIRD-299-0-A"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.loa_m",
+      "value": 299.0,
+      "tag_name": "SB-HUL-GIRD-299-0-B"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.loa_m",
+      "value": 299.0,
+      "tag_name": "SB-HUL-LONGI-299-0"
+    },
+    {
+      "section": "principal_dimensions",
+      "field_name": "principal_dimensions.loa_m",
+      "value": 299.0,
+      "tag_name": "SB-HUL-SIDESHELL-299-0"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-BED-ME-GI-A"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-FGAS-ME-GI"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-FOUND-ME-GI"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-MENG-ME-GI"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-PIPE-ME-GI-A"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-PIPE-ME-GI-B"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-SUPPORT-ME-GI"
+    },
+    {
+      "section": "machinery",
+      "field_name": "machinery.main_engine",
+      "value": "ME-GI",
+      "tag_name": "SB-MAC-TRAY-ME-GI"
+    }
+  ]
+}

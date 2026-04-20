@@ -111,19 +111,19 @@ def _render_selected_project_status() -> None:
         return
 
     st.success(
-        f"`{selected_project['project_name']}` 프로젝트가 이후 POS/모델 편집설계 기준으로 선택되어 있습니다."
+        f"`{selected_project['project_name']}` 프로젝트가 유사 실적선 기준으로 선택되었습니다."
     )
 
     if current_spec:
         st.caption(
-            f"현재 프로젝트 `{current_spec['project_name']}`에 대해 선택된 실적선 기준을 이어서 사용할 수 있습니다."
+            f"현재 프로젝트 `{current_spec['project_name']}`에 대해 선택된 실적선 기준을 사용할 수 있습니다."
         )
 
 
 def render_spec_search_page() -> None:
-    st.title("유사 프로젝트 검색")
+    st.title("유사 프로젝트 탐색")
     _render_description(
-        "현재 건조사양서를 기준으로 가장 가까운 실적선 프로젝트를 찾고, 이후 POS와 모델 편집설계의 기준 프로젝트로 연결합니다."
+        "현 프로젝트의 건조사양서를 기준으로 가장 유사한 실적선 프로젝트를 찾습니다."
     )
 
     repository = SpecRepository(data_dir=PROCESSED_DATA_DIR)
@@ -264,7 +264,7 @@ def render_spec_search_page() -> None:
 
     st.progress(max(0, min(int(selected_result["score"] * 100), 100)))
     st.caption(
-        f"선택한 기준 프로젝트는 `{top_doc.spec_id}`이며, 현재 입력 사양서와의 유사도는 `{selected_result['score']:.3f}`입니다."
+        f"선택한 기준 사양서는 `{top_doc.spec_id}`이며, 현재 입력 사양서와의 유사도는 `{selected_result['score']:.3f}`입니다."
     )
 
     metric_col1, metric_col2, metric_col3 = st.columns(3)

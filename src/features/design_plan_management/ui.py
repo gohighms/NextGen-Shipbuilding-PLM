@@ -17,7 +17,7 @@ def render_design_plan_management_page() -> None:
     current_spec = get_current_spec()
     project_name = current_spec["project_name"] if current_spec else "HD9001"
 
-    st.title("설계계획(DP) 관리")
+    st.title("설계 계획 관리")
     st.caption("Master Design Schedule(MDS)를 기준으로 Design Plan(DP)을 수립하고, 롤링에 따라 연계된 설계계획이 함께 움직이는 시나리오를 보여줍니다.")
 
     mds_rows = build_mds_schedule(project_name)
@@ -37,7 +37,7 @@ def render_design_plan_management_page() -> None:
 
     st.divider()
     st.subheader("1. MDS 기준 DP 수립 현황")
-    st.caption("표준 설계 key event인 MDS를 기준으로, 현재 프로젝트의 DP가 어떤 일정으로 수립되었는지 보여줍니다.")
+    st.caption("표준 MDS를 기준으로, 현재 프로젝트의 DP 수립 현황을 보여줍니다.")
 
     overlay_chart_df = _build_overlay_chart_dataframe(mds_chart_rows, dp_chart_rows)
     st.altair_chart(_build_overlay_chart(overlay_chart_df), use_container_width=True)

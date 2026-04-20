@@ -12,7 +12,7 @@ from src.features.pos_generation.draft_repository import PosDraftRepository
 
 def render_design_change_management_page() -> None:
     st.title("설계 변경 관리")
-    st.caption("현 프로젝트 설계 초안이 일정 수준 완성된 상태를 가정하고, 이후 발생하는 변경 요청과 리비전 관리를 다룹니다.")
+    st.caption("설계가 일정 수준 완성된 상태를 가정하고, 이후 발생하는 변경 요청과 리비전 관리를 다룹니다.")
 
     model_draft_repository = ModelDraftRepository(MODEL_DRAFT_DIR)
     pos_draft_repository = PosDraftRepository(POS_DRAFT_DIR)
@@ -20,7 +20,7 @@ def render_design_change_management_page() -> None:
     pos_drafts = pos_draft_repository.list_all()
 
     if not model_drafts:
-        st.info("먼저 `실적선 기반 설계 재활용 > 유사 프로젝트 기반 모델 편집설계`에서 모델 시작 구조를 저장해 주세요.")
+        st.info("먼저 `설계 자산 재활용 > 모델 편집설계`에서 모델 시작 구조를 저장해 주세요.")
         return
 
     selected_model_draft_id = st.selectbox(

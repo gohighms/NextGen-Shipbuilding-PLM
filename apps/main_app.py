@@ -15,48 +15,48 @@ from src.features.bom_management.ui import (
     render_block_division_page,
     render_mbom_page,
     render_wbom_page,
-    render_work_instruction_page,
 )
 from src.features.design_change_management.ui import render_design_change_management_page
 from src.features.design_plan_management.ui import render_design_plan_management_page
 from src.features.digital_thread.ontology_ui import render_ontology_management_page
-from src.features.digital_thread.supply_chain_ui import render_supply_chain_tracking_page
-from src.features.digital_thread.ui import render_project_thread_map_page
+from src.features.digital_thread.rag_chat_ui import render_rag_chat_demo_page
 from src.features.model_generation.ui import render_model_generation_page
 from src.features.pos_generation.ui import render_pos_generation_page
 from src.features.spec_search.ui import render_spec_search_page
 from src.features.tag_management.ui import render_tag_management_page
 
 
-REUSE_AREA = "실적선 기반 설계 재활용"
+REUSE_AREA = "설계 자산 재활용"
 PROJECT_AREA = "프로젝트 관리"
-BOM_AREA = "목적별 BOM 관리"
+BOM_AREA = "통합 BOM 관리"
 THREAD_AREA = "디지털 쓰레드"
 NAVIGATION_STATE_KEY = "selected_navigation_page"
+AREA_WIDGET_KEY = "sidebar_area_widget"
+PAGE_WIDGET_KEY = "sidebar_page_widget"
+NAVIGATION_TARGET_AREA_KEY = "navigation_target_area"
+NAVIGATION_TARGET_PAGE_KEY = "navigation_target_page"
 
 REUSE_PAGES = {
-    "1. 유사 프로젝트 검색": render_spec_search_page,
-    "2. 유사 프로젝트 기반 POS 편집설계": render_pos_generation_page,
-    "3. 유사 프로젝트 기반 모델 편집설계": render_model_generation_page,
+    "1. 유사 프로젝트 탐색": render_spec_search_page,
+    "2. POS 사양 재구성": render_pos_generation_page,
+    "3. 모델 편집설계": render_model_generation_page,
 }
 
 PROJECT_PAGES = {
-    "1. 설계계획(DP) 관리": render_design_plan_management_page,
+    "1. 설계 계획 관리": render_design_plan_management_page,
     "2. 설계 변경 관리": render_design_change_management_page,
 }
 
 BOM_PAGES = {
-    "1. Block Division": render_block_division_page,
-    "2. MBOM 생성": render_mbom_page,
-    "3. WBOM 생성": render_wbom_page,
-    "4. 작업지시서": render_work_instruction_page,
+    "1. 블록 분할 정의": render_block_division_page,
+    "2. 생산 BOM 구축": render_mbom_page,
+    "3. 작업 패키지 BOM": render_wbom_page,
 }
 
 THREAD_PAGES = {
-    "1. TAG 관리": render_tag_management_page,
-    "2. 프로젝트 Thread Map": render_project_thread_map_page,
-    "3. 온톨로지 / 지식그래프 관리": render_ontology_management_page,
-    "4. 구매-설계-생산 추적": render_supply_chain_tracking_page,
+    "1. 통합 TAG 관리": render_tag_management_page,
+    "2. 온톨로지 / 지식그래프": render_ontology_management_page,
+    "3. AI 지식 어시스턴트": render_rag_chat_demo_page,
 }
 
 
@@ -202,24 +202,41 @@ def main() -> None:
     _apply_global_font_scale()
 
     st.sidebar.title("NextGen Shipbuilding PLM")
-    area_name = st.sidebar.selectbox("영역 선택", [REUSE_AREA, PROJECT_AREA, BOM_AREA, THREAD_AREA])
+    if AREA_WIDGET_KEY not in st.session_state:
+        st.session_state[AREA_WIDGET_KEY] = REUSE_AREA
+
+    pending_area = st.session_state.pop(NAVIGATION_TARGET_AREA_KEY, None)
+    if pending_area in [REUSE_AREA, PROJECT_AREA, BOM_AREA, THREAD_AREA]:
+        st.session_state[AREA_WIDGET_KEY] = pending_area
+
+    area_name = st.sidebar.selectbox("영역 선택", [REUSE_AREA, PROJECT_AREA, BOM_AREA, THREAD_AREA], key=AREA_WIDGET_KEY)
 
     if area_name == REUSE_AREA:
         st.sidebar.markdown("### 실적선 기반 설계 재활용")
-        page_name = st.sidebar.radio("세부 기능", list(REUSE_PAGES.keys()))
-        render_page = REUSE_PAGES[page_name]
+        page_options = list(REUSE_PAGES.keys())
+        render_map = REUSE_PAGES
     elif area_name == PROJECT_AREA:
         st.sidebar.markdown("### 프로젝트 관리")
-        page_name = st.sidebar.radio("세부 기능", list(PROJECT_PAGES.keys()))
-        render_page = PROJECT_PAGES[page_name]
+        page_options = list(PROJECT_PAGES.keys())
+        render_map = PROJECT_PAGES
     elif area_name == BOM_AREA:
         st.sidebar.markdown("### 목적별 BOM 관리")
-        page_name = st.sidebar.radio("세부 기능", list(BOM_PAGES.keys()))
-        render_page = BOM_PAGES[page_name]
+        page_options = list(BOM_PAGES.keys())
+        render_map = BOM_PAGES
     else:
         st.sidebar.markdown("### 디지털 쓰레드")
-        page_name = st.sidebar.radio("세부 기능", list(THREAD_PAGES.keys()))
-        render_page = THREAD_PAGES[page_name]
+        page_options = list(THREAD_PAGES.keys())
+        render_map = THREAD_PAGES
+
+    if PAGE_WIDGET_KEY not in st.session_state or st.session_state[PAGE_WIDGET_KEY] not in page_options:
+        st.session_state[PAGE_WIDGET_KEY] = page_options[0]
+
+    pending_page = st.session_state.pop(NAVIGATION_TARGET_PAGE_KEY, None)
+    if pending_page in page_options:
+        st.session_state[PAGE_WIDGET_KEY] = pending_page
+
+    page_name = st.sidebar.radio("세부 기능", page_options, key=PAGE_WIDGET_KEY)
+    render_page = render_map[page_name]
 
     navigation_id = f"{area_name}::{page_name}"
     page_changed = _scroll_to_top_if_page_changed(navigation_id)

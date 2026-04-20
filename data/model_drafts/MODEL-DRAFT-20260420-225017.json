@@ -1,12 +1,12 @@
 {
-  "draft_id": "MODEL-DRAFT-20260418-234142",
-  "saved_at": "2026-04-18 23:41:42",
+  "draft_id": "MODEL-DRAFT-20260420-225017",
+  "saved_at": "2026-04-20 22:50:17",
   "change_note": "HD1001 기준 모델에서 필요한 구조를 재활용하여 HD9001 모델 편집설계를 시작.",
   "new_model_id": "MODEL-HD9001-001",
   "source_project_spec_id": "LNGC-241K-001",
   "source_project_name": "HD1001",
   "current_project_name": "HD9001",
-  "source_pos_draft_id": "POS-DRAFT-20260418-234134",
+  "source_pos_draft_id": "POS-DRAFT-20260420-224958",
   "based_on_model_id": "MODEL-HD1001-001",
   "title": "HD9001 모델 편집설계 초안",
   "discipline": "선체/의장 통합",
@@ -126,6 +126,31 @@
       "reuse_hint_fields": [
         "principal_dimensions.loa_m"
       ]
+    },
+    {
+      "path": "PROJECT/HD9001/HULL/DECK-STRUCTURE",
+      "node_code": "DECK-STRUCTURE",
+      "name": "갑판 구조",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "갑판 구조"
+    },
+    {
+      "path": "PROJECT/HD9001/HULL/DECK-STRUCTURE/MAIN-DECK",
+      "node_code": "MAIN-DECK",
+      "name": "상갑판",
+      "type": "Assembly",
+      "design_structure": "선체",
+      "model_type": "플레이트 묶음"
+    },
+    {
+      "path": "PROJECT/HD9001/HULL/DECK-STRUCTURE/MAIN-DECK/PLATE-MD-001",
+      "node_code": "PLATE-MD-001",
+      "name": "상갑판 001",
+      "type": "Part",
+      "design_structure": "선체",
+      "model_type": "플레이트",
+      "spec_basis": "Breadth 반영"
     },
     {
       "path": "PROJECT/HD9001/OUTFIT-STEEL",
@@ -260,8 +285,10 @@
       "spec_basis": "메인 엔진 기자재 반영"
     }
   ],
-  "selected_structure_count": 24,
+  "selected_structure_count": 27,
   "selected_structure_paths": [
+    "PROJECT/HD1001/HULL",
+    "PROJECT/HD1001/HULL/SHELL-PLATING",
     "PROJECT/HD1001/HULL/SHELL-PLATING/SIDE-SHELL/PLATE-SS-001",
     "PROJECT/HD1001/HULL/SHELL-PLATING/BOTTOM-SHELL/PLATE-BS-001",
     "PROJECT/HD1001/HULL/INTERNAL-STRUCTURE/LONGITUDINAL-MEMBER/STIFFENER-LG-001",

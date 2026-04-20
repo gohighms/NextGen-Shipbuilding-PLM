@@ -1,0 +1,210 @@
+{
+  "division_id": "BLOCK-DIV-20260420-225100",
+  "saved_at": "2026-04-20 22:51:00",
+  "project_name": "HD9001",
+  "source_model_draft_id": "MODEL-DRAFT-20260420-225017",
+  "source_model_id": "MODEL-HD1001-001",
+  "title": "HD9001 Block Division 초안",
+  "logical_rows": [
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-109",
+      "노드코드": "PLATE-SS-001",
+      "노드명": "현측 외판 001",
+      "SFD 타입": "Surface 플레이트",
+      "모델경로": "PROJECT/HD9001/HULL/SHELL-PLATING/SIDE-SHELL/PLATE-SS-001",
+      "분류 근거": "현측 외판 영역 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-109",
+      "노드코드": "SIDE-SHELL",
+      "노드명": "현측 외판",
+      "SFD 타입": "Surface Assembly",
+      "모델경로": "PROJECT/HD9001/HULL/SHELL-PLATING/SIDE-SHELL",
+      "분류 근거": "현측 외판 영역 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-152",
+      "노드코드": "BOTTOM-SHELL",
+      "노드명": "저판 외판",
+      "SFD 타입": "Surface Assembly",
+      "모델경로": "PROJECT/HD9001/HULL/SHELL-PLATING/BOTTOM-SHELL",
+      "분류 근거": "저판 구조 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-152",
+      "노드코드": "PLATE-BS-001",
+      "노드명": "저판 외판 001",
+      "SFD 타입": "Surface 플레이트",
+      "모델경로": "PROJECT/HD9001/HULL/SHELL-PLATING/BOTTOM-SHELL/PLATE-BS-001",
+      "분류 근거": "저판 구조 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-221",
+      "노드코드": "LONGITUDINAL-MEMBER",
+      "노드명": "종보강재",
+      "SFD 타입": "Surface Assembly",
+      "모델경로": "PROJECT/HD9001/HULL/INTERNAL-STRUCTURE/LONGITUDINAL-MEMBER",
+      "분류 근거": "종보강재 구조 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-221",
+      "노드코드": "STIFFENER-LG-001",
+      "노드명": "종보강재 001",
+      "SFD 타입": "Surface 스티프너",
+      "모델경로": "PROJECT/HD9001/HULL/INTERNAL-STRUCTURE/LONGITUDINAL-MEMBER/STIFFENER-LG-001",
+      "분류 근거": "종보강재 구조 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-301",
+      "노드코드": "DECK-STRUCTURE",
+      "노드명": "갑판 구조",
+      "SFD 타입": "Surface Assembly",
+      "모델경로": "PROJECT/HD9001/HULL/DECK-STRUCTURE",
+      "분류 근거": "선체 기본 구조 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-301",
+      "노드코드": "INTERNAL-STRUCTURE",
+      "노드명": "내부 구조",
+      "SFD 타입": "Surface Assembly",
+      "모델경로": "PROJECT/HD9001/HULL/INTERNAL-STRUCTURE",
+      "분류 근거": "선체 기본 구조 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-301",
+      "노드코드": "MAIN-DECK",
+      "노드명": "상갑판",
+      "SFD 타입": "Surface Assembly",
+      "모델경로": "PROJECT/HD9001/HULL/DECK-STRUCTURE/MAIN-DECK",
+      "분류 근거": "선체 기본 구조 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-301",
+      "노드코드": "PLATE-MD-001",
+      "노드명": "상갑판 001",
+      "SFD 타입": "Surface 플레이트",
+      "모델경로": "PROJECT/HD9001/HULL/DECK-STRUCTURE/MAIN-DECK/PLATE-MD-001",
+      "분류 근거": "선체 기본 구조 기준"
+    },
+    {
+      "프로젝트": "HD9001",
+      "논리 블록": "BLOCK-301",
+      "노드코드": "SHELL-PLATING",
+      "노드명": "외판 구조",
+      "SFD 타입": "Surface Assembly",
+      "모델경로": "PROJECT/HD9001/HULL/SHELL-PLATING",
+      "분류 근거": "선체 기본 구조 기준"
+    }
+  ],
+  "sdd_rows": [
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-109",
+      "솔리드 모델명": "BLOCK-109-PLATE-SS-001",
+      "기준 항목": "현측 외판 001",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-109",
+      "솔리드 모델명": "BLOCK-109-SIDE-SHELL",
+      "기준 항목": "현측 외판",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-152",
+      "솔리드 모델명": "BLOCK-152-BOTTOM-SHELL",
+      "기준 항목": "저판 외판",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-152",
+      "솔리드 모델명": "BLOCK-152-PLATE-BS-001",
+      "기준 항목": "저판 외판 001",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-221",
+      "솔리드 모델명": "BLOCK-221-LONGITUDINAL-MEMBER",
+      "기준 항목": "종보강재",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-221",
+      "솔리드 모델명": "BLOCK-221-STIFFENER-LG-001",
+      "기준 항목": "종보강재 001",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-301",
+      "솔리드 모델명": "BLOCK-301-DECK-STRUCTURE",
+      "기준 항목": "갑판 구조",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-301",
+      "솔리드 모델명": "BLOCK-301-INTERNAL-STRUCTURE",
+      "기준 항목": "내부 구조",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-301",
+      "솔리드 모델명": "BLOCK-301-MAIN-DECK",
+      "기준 항목": "상갑판",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-301",
+      "솔리드 모델명": "BLOCK-301-PLATE-MD-001",
+      "기준 항목": "상갑판 001",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    },
+    {
+      "프로젝트": "HD9001",
+      "SDD 블록": "BLOCK-301",
+      "솔리드 모델명": "BLOCK-301-SHELL-PLATING",
+      "기준 항목": "외판 구조",
+      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
+    }
+  ],
+  "summary_rows": [
+    {
+      "논리 블록": "BLOCK-109",
+      "포함 항목 수": 2,
+      "다음 단계": "SDD solid block model 구성"
+    },
+    {
+      "논리 블록": "BLOCK-152",
+      "포함 항목 수": 2,
+      "다음 단계": "SDD solid block model 구성"
+    },
+    {
+      "논리 블록": "BLOCK-221",
+      "포함 항목 수": 2,
+      "다음 단계": "SDD solid block model 구성"
+    },
+    {
+      "논리 블록": "BLOCK-301",
+      "포함 항목 수": 5,
+      "다음 단계": "SDD solid block model 구성"
+    }
+  ]
+}
