@@ -107,6 +107,12 @@
 streamlit run apps/main_app.py
 ```
 
+기본 실행에서는 `data/` 아래에 저장된 POS 초안, 모델 초안, BOM 이력을 유지합니다. 데모 데이터를 앱 시작 시마다 비우고 싶을 때만 아래 환경변수를 켜세요.
+
+```env
+NEXTGEN_RESET_HISTORY_ON_START=true
+```
+
 ---
 
 ## OpenAI 연계
