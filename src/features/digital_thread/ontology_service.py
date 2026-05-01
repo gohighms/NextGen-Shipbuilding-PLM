@@ -111,8 +111,8 @@ def build_supply_chain_tracking_context(current_spec: dict | None, selected_proj
 
     if mbom_item:
         for row in mbom_item.get("mbom_rows", [])[:20]:
-            item_code = _pick(row, "항목코드", "item_code") or "MBOM"
-            item_name = _pick(row, "항목명", "item_name") or "MBOM 항목"
+            item_code = _pick(row, "품목코드", "항목코드", "item_code") or "MBOM"
+            item_name = _pick(row, "품목명", "항목명", "item_name") or "MBOM 항목"
             nodes.append(
                 {
                     "id": f"mbom::{item_code}",
@@ -124,8 +124,8 @@ def build_supply_chain_tracking_context(current_spec: dict | None, selected_proj
 
     if wbom_item:
         for row in wbom_item.get("wbom_rows", [])[:20]:
-            item_code = _pick(row, "항목코드", "item_code") or "WBOM"
-            item_name = _pick(row, "항목명", "item_name") or "WBOM 항목"
+            item_code = _pick(row, "품목코드", "항목코드", "item_code") or "WBOM"
+            item_name = _pick(row, "품목명", "항목명", "item_name") or "WBOM 항목"
             nodes.append(
                 {
                     "id": f"wbom::{item_code}",
@@ -141,7 +141,7 @@ def build_supply_chain_tracking_context(current_spec: dict | None, selected_proj
     if mbom_item:
         for row in mbom_item.get("mbom_rows", [])[:20]:
             model_code = _pick(row, "원천 모델", "source_model") or ""
-            item_code = _pick(row, "항목코드", "item_code") or "MBOM"
+            item_code = _pick(row, "품목코드", "항목코드", "item_code") or "MBOM"
             model_node_id = _find_node_id_by_suffix(node_lookup, model_code)
             bom_node_id = f"mbom::{item_code}"
             if model_node_id and bom_node_id in node_lookup:
@@ -150,7 +150,7 @@ def build_supply_chain_tracking_context(current_spec: dict | None, selected_proj
     if wbom_item:
         for row in wbom_item.get("wbom_rows", [])[:20]:
             model_code = _pick(row, "모델ID", "model_id") or ""
-            item_code = _pick(row, "항목코드", "item_code") or "WBOM"
+            item_code = _pick(row, "품목코드", "항목코드", "item_code") or "WBOM"
             model_node_id = _find_node_id_by_suffix(node_lookup, model_code)
             work_node_id = f"wbom::{item_code}"
             if model_node_id and work_node_id in node_lookup:

@@ -96,111 +96,223 @@ def build_bom_model_structure_rows(model_hierarchy: list[dict]) -> list[dict]:
     base_path = f"PROJECT/{project_code}/BOM-VIEW"
 
     rows: list[dict] = []
-    for block in _block_blueprints():
-        block_path = f"{base_path}/{block['block_code']}"
+    for index, item in enumerate(_collect_model_parts(model_hierarchy), start=1):
+        grand_block = _assign_grand_block(item, index)
+        sub_block = _sub_block_code(grand_block, index)
+        mid_block = _mid_block_code(grand_block, index)
+        pe_block = _assign_pe_block(grand_block)
+        node_code = item.get("node_code", item.get("path", f"PART-{index:03d}").split("/")[-1])
+        node_name = item.get("name", node_code)
+        design_structure = item.get("design_structure", item.get("type", "모델 구조"))
+        model_type = item.get("model_type", item.get("type", "모델 항목"))
+
         rows.append(
             {
-                "구조레벨": 1,
-                "노드코드": block["block_code"],
-                "노드명": block["block_name"],
-                "설계구조": block["design_structure"],
-                "모델타입": "블록",
-                "모델경로": block_path,
-                "생성조직": block["organization"],
-                "개정": "R00",
-                "블록힌트": block["block_code"],
-                "조립단계힌트": "",
+                "구조레벨": max(item.get("path", "").count("/") - 1, 0),
+                "노드코드": node_code,
+                "노드명": node_name,
+                "설계구조": design_structure,
+                "모델타입": model_type,
+                "모델경로": item.get("path", f"{base_path}/{node_code}"),
+                "생성조직": item.get("organization", _default_organization(design_structure)),
+                "개정": item.get("revision", "R00"),
+                "블록힌트": grand_block,
+                "조립단계힌트": "파트",
+                "소조블록힌트": sub_block,
+                "중조블록힌트": mid_block,
+                "대조블록힌트": grand_block,
+                "PE블록힌트": pe_block,
             }
         )
-
-        for stage in block["stages"]:
-            stage_path = f"{block_path}/{stage['stage_code']}"
-            rows.append(
-                {
-                    "구조레벨": 2,
-                    "노드코드": f"{block['block_code']}-{stage['stage_code']}",
-                    "노드명": stage["stage_name"],
-                    "설계구조": block["design_structure"],
-                    "모델타입": stage["model_type"],
-                    "모델경로": stage_path,
-                    "생성조직": block["organization"],
-                    "개정": "R00",
-                    "블록힌트": block["block_code"],
-                    "조립단계힌트": stage["stage_name"],
-                }
-            )
-
-            for component in stage["components"]:
-                rows.append(
-                    {
-                        "구조레벨": 3,
-                        "노드코드": component["model_id"],
-                        "노드명": component["model_name"],
-                        "설계구조": block["design_structure"],
-                        "모델타입": component["model_type"],
-                        "모델경로": f"{stage_path}/{component['model_id']}",
-                        "생성조직": block["organization"],
-                        "개정": "R00",
-                        "블록힌트": block["block_code"],
-                        "조립단계힌트": stage["stage_name"],
-                    }
-                )
 
     return rows
 
 
 def build_mbom_rows(block_division_item: dict, full_model_rows: list[dict]) -> list[dict]:
+    project_name = block_division_item["project_name"]
+    part_rows = _build_part_input_rows(block_division_item, full_model_rows)
     rows: list[dict] = []
-    for model_row in full_model_rows:
-        block_code = model_row.get("블록힌트", "")
-        stage_name = model_row.get("조립단계힌트", "")
-        if not block_code or not stage_name or model_row["구조레벨"] < 3:
-            continue
+    row_keys: set[str] = set()
 
-        family = _to_mbom_family(model_row["설계구조"], model_row["모델타입"])
-        rows.append(
-            {
-                "프로젝트": block_division_item["project_name"],
-                "블록": block_code,
-                "MBOM 단계": stage_name,
-                "설계구조": model_row["설계구조"],
-                "품목군": family,
-                "품목코드": f"{block_code}-{stage_name}-{model_row['노드코드']}",
-                "품목명": model_row["노드명"],
-                "원천 모델": model_row["노드코드"],
-                "구성 view": "모델 구조 기준 생산 목적 재구성",
-            }
+    def add_row(row: dict) -> None:
+        key = row["품목코드"]
+        if key in row_keys:
+            return
+        row_keys.add(key)
+        rows.append(row)
+
+    add_row(
+        _make_mbom_row(
+            project_name=project_name,
+            assembly_level="SHIP",
+            stage_name="탑재",
+            item_code="SHIP-HULL",
+            item_name=f"{project_name} 선박",
+            parent_code="",
+            grand_block="",
+            pe_block="",
+            sub_block="",
+            mid_block="",
+            design_structure="선박",
+            family="선박",
+            source_model="",
+            send_code="G9-DK",
+            view_note="대조/PE 블록 탑재 완료 기준 선박 구성",
+        )
+    )
+
+    for pe_block in sorted({row["PE블록"] for row in part_rows if row["PE블록"]}):
+        grand_blocks = sorted({row["대조블록"] for row in part_rows if row["PE블록"] == pe_block})
+        add_row(
+            _make_mbom_row(
+                project_name=project_name,
+                assembly_level="PE_BLOCK",
+                stage_name="PE",
+                item_code=f"PE-{pe_block}",
+                item_name=f"{pe_block} PE 블록",
+                parent_code="SHIP-HULL",
+                grand_block=", ".join(grand_blocks),
+                pe_block=pe_block,
+                sub_block="",
+                mid_block="",
+                design_structure="선체",
+                family="PE 블록",
+                source_model="",
+                send_code=_send_code_for("PE", pe_block),
+                view_note="대조 블록을 탑재 전 단위로 선행 결합",
+            )
         )
 
-    stage_order = {"소조": 0, "중조": 1, "대조": 2, "PE": 3}
-    rows.sort(key=lambda item: (item["블록"], stage_order.get(item["MBOM 단계"], 9), item["품목코드"]))
+    for grand_block in sorted({row["대조블록"] for row in part_rows}):
+        pe_block = _assign_pe_block(grand_block)
+        parent_code = f"PE-{pe_block}" if pe_block else "SHIP-HULL"
+        add_row(
+            _make_mbom_row(
+                project_name=project_name,
+                assembly_level="GRAND_BLOCK",
+                stage_name="대조",
+                item_code=grand_block,
+                item_name=f"{grand_block} 대조 블록",
+                parent_code=parent_code,
+                grand_block=grand_block,
+                pe_block=pe_block,
+                sub_block="",
+                mid_block="",
+                design_structure="선체",
+                family="대조 블록",
+                source_model="",
+                send_code=_send_code_for("대조", grand_block),
+                view_note="중조 블록을 대조 단위로 결합",
+            )
+        )
+
+    for mid_block in sorted({row["중조블록"] for row in part_rows}):
+        sample = next(row for row in part_rows if row["중조블록"] == mid_block)
+        add_row(
+            _make_mbom_row(
+                project_name=project_name,
+                assembly_level="MID_BLOCK",
+                stage_name="중조",
+                item_code=mid_block,
+                item_name=f"{mid_block} 중조 블록",
+                parent_code=sample["대조블록"],
+                grand_block=sample["대조블록"],
+                pe_block=sample["PE블록"],
+                sub_block="",
+                mid_block=mid_block,
+                design_structure=sample["설계구조"],
+                family="중조 블록",
+                source_model="",
+                send_code=_send_code_for("중조", mid_block),
+                view_note="소조 블록을 중간 조립체로 결합",
+            )
+        )
+
+    for sub_block in sorted({row["소조블록"] for row in part_rows}):
+        sample = next(row for row in part_rows if row["소조블록"] == sub_block)
+        add_row(
+            _make_mbom_row(
+                project_name=project_name,
+                assembly_level="SUB_BLOCK",
+                stage_name="소조",
+                item_code=sub_block,
+                item_name=f"{sub_block} 소조 블록",
+                parent_code=sample["중조블록"],
+                grand_block=sample["대조블록"],
+                pe_block=sample["PE블록"],
+                sub_block=sub_block,
+                mid_block=sample["중조블록"],
+                design_structure=sample["설계구조"],
+                family="소조 블록",
+                source_model="",
+                send_code=_send_code_for("소조", sub_block),
+                view_note="모델 파트를 소조 단위로 군집화",
+            )
+        )
+
+    for part in part_rows:
+        family = _to_mbom_family(part["설계구조"], part["모델타입"])
+        add_row(
+            _make_mbom_row(
+                project_name=project_name,
+                assembly_level="PART",
+                stage_name="파트",
+                item_code=f"{part['소조블록']}-{part['노드코드']}",
+                item_name=part["노드명"],
+                parent_code=part["소조블록"],
+                grand_block=part["대조블록"],
+                pe_block=part["PE블록"],
+                sub_block=part["소조블록"],
+                mid_block=part["중조블록"],
+                design_structure=part["설계구조"],
+                family=family,
+                source_model=part["노드코드"],
+                send_code=_send_code_for("파트", part["소조블록"]),
+                view_note="모델 파트 기준 물량/발주 가능 항목",
+            )
+        )
+
+    level_order = {"SHIP": 0, "PE_BLOCK": 1, "GRAND_BLOCK": 2, "MID_BLOCK": 3, "SUB_BLOCK": 4, "PART": 5}
+    rows.sort(key=lambda item: (item["대조블록"] or "ZZZ", item["PE블록"] or "ZZZ", level_order[item["조립레벨"]], item["품목코드"]))
     return rows
 
 
 def build_mbom_summary_rows(mbom_rows: list[dict]) -> list[dict]:
-    grouped = Counter((row["블록"], row["MBOM 단계"]) for row in mbom_rows)
-    stage_order = {"소조": 0, "중조": 1, "대조": 2, "PE": 3}
+    grouped = Counter((row["조립레벨"], row["MBOM 단계"], row.get("송선코드", "")) for row in mbom_rows)
+    level_order = {"SHIP": 0, "PE_BLOCK": 1, "GRAND_BLOCK": 2, "MID_BLOCK": 3, "SUB_BLOCK": 4, "PART": 5}
     summary = [
         {
-            "블록": block_code,
+            "조립레벨": assembly_level,
             "MBOM 단계": stage_name,
+            "송선코드": send_code,
             "구성 품목 수": count,
         }
-        for (block_code, stage_name), count in grouped.items()
+        for (assembly_level, stage_name, send_code), count in grouped.items()
     ]
-    summary.sort(key=lambda row: (row["블록"], stage_order.get(row["MBOM 단계"], 9)))
+    summary.sort(key=lambda row: (level_order.get(row["조립레벨"], 9), row["MBOM 단계"], row["송선코드"]))
     return summary
 
 
 def build_wbom_rows(mbom_item: dict) -> list[dict]:
     rows: list[dict] = []
     for row in mbom_item.get("mbom_rows", []):
-        package_name = f"{row['블록']}-{row['MBOM 단계']}"
+        if row.get("조립레벨") == "SHIP":
+            continue
+        package_name = f"{row.get('송선To', '-')}-{row['MBOM 단계']}-{row['품목코드']}"
         rows.append(
             {
                 "프로젝트": row["프로젝트"],
                 "블록": row["블록"],
                 "조립단계": row["MBOM 단계"],
+                "조립레벨": row.get("조립레벨", ""),
+                "상위품목코드": row.get("상위품목코드", ""),
+                "소조블록": row.get("소조블록", ""),
+                "중조블록": row.get("중조블록", ""),
+                "대조블록": row.get("대조블록", row["블록"]),
+                "PE블록": row.get("PE블록", ""),
+                "송선코드": row.get("송선코드", ""),
+                "송선From": row.get("송선From", ""),
+                "송선To": row.get("송선To", ""),
                 "설계구조": row["설계구조"],
                 "작업 패키지": package_name,
                 "WBOM 구분": "본체 작업",
@@ -245,13 +357,16 @@ def build_work_instruction_rows(wbom_item: dict) -> list[dict]:
                 "작업지시 ID": f"WI-{package_name}",
                 "블록": row.get("블록", package_name.split("-")[0]),
                 "조립단계": row.get("조립단계", package_name.split("-")[-1]),
+                "송선코드": row.get("송선코드", ""),
+                "송선From": row.get("송선From", ""),
+                "송선To": row.get("송선To", ""),
                 "설계구조": row.get("설계구조", "-"),
                 "작업 패키지": package_name,
-                "주 작업": _to_primary_work(package_name),
-                "준비 항목": _to_preparation_items(package_name),
+                "주 작업": _to_primary_work(row.get("조립단계", package_name)),
+                "준비 항목": _to_preparation_items(row.get("조립단계", package_name)),
                 "참조 항목 수": len(package_rows),
                 "작업 순서": "자재 준비 → 조립/취부 → 검사/보완 → 작업 지원물 정리",
-                "담당 조직": _to_work_team(package_name),
+                "담당 조직": _to_work_team(row.get("조립단계", package_name)),
             }
         )
     return rows
@@ -265,10 +380,154 @@ def build_work_instruction_summary_rows(instruction_rows: list[dict]) -> list[di
             "작업 패키지": row["작업 패키지"],
             "주 작업": row["주 작업"],
             "참조 항목 수": row["참조 항목 수"],
+            "송선코드": row.get("송선코드", ""),
             "담당 조직": row["담당 조직"],
         }
         for row in instruction_rows
     ]
+
+
+def _collect_model_parts(model_hierarchy: list[dict]) -> list[dict]:
+    parts = [
+        item
+        for item in model_hierarchy
+        if item.get("type") in {"Part", "Assembly"} and item.get("node_code")
+    ]
+    if parts:
+        return parts
+    return [
+        {
+            "type": "Part",
+            "node_code": component["model_id"],
+            "name": component["model_name"],
+            "design_structure": block["design_structure"],
+            "model_type": component["model_type"],
+            "path": f"FALLBACK/{block['block_code']}/{component['model_id']}",
+            "organization": block["organization"],
+            "revision": "R00",
+        }
+        for block in _block_blueprints()
+        for stage in block["stages"]
+        for component in stage["components"]
+    ]
+
+
+def _build_part_input_rows(block_division_item: dict, full_model_rows: list[dict]) -> list[dict]:
+    source_rows = block_division_item.get("logical_rows") or full_model_rows
+    part_rows: list[dict] = []
+    for index, row in enumerate(source_rows, start=1):
+        grand_block = _assign_grand_block(row, index)
+        part_rows.append(
+            {
+                "노드코드": row.get("노드코드", row.get("모델ID", f"PART-{index:03d}")),
+                "노드명": row.get("노드명", row.get("모델명", f"파트 {index:03d}")),
+                "설계구조": row.get("설계구조", "선체"),
+                "모델타입": row.get("모델타입", row.get("SFD 타입", "모델 파트")),
+                "소조블록": _sub_block_code(grand_block, index),
+                "중조블록": _mid_block_code(grand_block, index),
+                "대조블록": grand_block,
+                "PE블록": _assign_pe_block(grand_block),
+            }
+        )
+    return part_rows
+
+
+def _make_mbom_row(
+    *,
+    project_name: str,
+    assembly_level: str,
+    stage_name: str,
+    item_code: str,
+    item_name: str,
+    parent_code: str,
+    grand_block: str,
+    pe_block: str,
+    sub_block: str,
+    mid_block: str,
+    design_structure: str,
+    family: str,
+    source_model: str,
+    send_code: str,
+    view_note: str,
+) -> dict:
+    send_from, send_to = _split_send_code(send_code)
+    return {
+        "프로젝트": project_name,
+        "조립레벨": assembly_level,
+        "MBOM 단계": stage_name,
+        "블록": grand_block or pe_block or item_code,
+        "소조블록": sub_block,
+        "중조블록": mid_block,
+        "대조블록": grand_block,
+        "PE블록": pe_block,
+        "상위품목코드": parent_code,
+        "송선코드": send_code,
+        "송선From": send_from,
+        "송선To": send_to,
+        "설계구조": design_structure,
+        "품목군": family,
+        "품목코드": item_code,
+        "품목명": item_name,
+        "원천 모델": source_model,
+        "구성 view": view_note,
+    }
+
+
+def _assign_grand_block(item: dict, index: int) -> str:
+    raw_block = item.get("논리 블록") or item.get("블록힌트") or item.get("대조블록힌트") or ""
+    block_map = {
+        "BLOCK-109": "BLOCK-102",
+        "BLOCK-152": "BLOCK-103",
+        "BLOCK-221": "BLOCK-104",
+        "BLOCK-301": "BLOCK-105",
+    }
+    if raw_block in block_map:
+        return block_map[raw_block]
+    if raw_block.startswith("BLOCK-10"):
+        return raw_block
+    return f"BLOCK-{102 + ((index - 1) % 4):03d}"
+
+
+def _sub_block_code(grand_block: str, index: int) -> str:
+    return f"SB-{grand_block.removeprefix('BLOCK-')}-{((index - 1) // 2) + 1:02d}"
+
+
+def _mid_block_code(grand_block: str, index: int) -> str:
+    return f"MB-{grand_block.removeprefix('BLOCK-')}-{((index - 1) // 4) + 1:02d}"
+
+
+def _assign_pe_block(grand_block: str) -> str:
+    mapping = {
+        "BLOCK-102": "10A",
+        "BLOCK-103": "10A",
+        "BLOCK-104": "10B",
+    }
+    return mapping.get(grand_block, "")
+
+
+def _send_code_for(stage_name: str, item_code: str) -> str:
+    if stage_name == "파트":
+        return "R1-R1"
+    if stage_name == "소조":
+        return "R1-C5" if _stable_number(item_code) % 2 == 0 else "R2-C6"
+    if stage_name == "중조":
+        return "C5-C8" if _stable_number(item_code) % 2 == 0 else "C6-C8"
+    if stage_name == "대조":
+        return "C8-B1" if item_code in {"BLOCK-102", "BLOCK-104"} else "C8-B2"
+    if stage_name == "PE":
+        return "B1-G9" if item_code == "10A" else "B2-G9"
+    return "G9-DK"
+
+
+def _split_send_code(send_code: str) -> tuple[str, str]:
+    if "-" not in send_code:
+        return send_code, send_code
+    send_from, send_to = send_code.split("-", 1)
+    return send_from, send_to
+
+
+def _stable_number(text: str) -> int:
+    return sum(ord(char) for char in text)
 
 
 def _block_blueprints() -> list[dict]:
@@ -411,12 +670,22 @@ def _build_support_item(mbom_row: dict) -> dict:
         mbom_row["품목군"],
         ("SUPPORT-GENERAL", "작업 보조물", "작업 수행 보조"),
     )
+    package_name = f"{mbom_row.get('송선To', '-')}-{mbom_row['MBOM 단계']}-{mbom_row['품목코드']}"
     return {
         "프로젝트": mbom_row["프로젝트"],
         "블록": mbom_row["블록"],
         "조립단계": mbom_row["MBOM 단계"],
+        "조립레벨": mbom_row.get("조립레벨", ""),
+        "상위품목코드": mbom_row.get("상위품목코드", ""),
+        "소조블록": mbom_row.get("소조블록", ""),
+        "중조블록": mbom_row.get("중조블록", ""),
+        "대조블록": mbom_row.get("대조블록", mbom_row["블록"]),
+        "PE블록": mbom_row.get("PE블록", ""),
+        "송선코드": mbom_row.get("송선코드", ""),
+        "송선From": mbom_row.get("송선From", ""),
+        "송선To": mbom_row.get("송선To", ""),
         "설계구조": mbom_row["설계구조"],
-        "작업 패키지": f"{mbom_row['블록']}-{mbom_row['MBOM 단계']}",
+        "작업 패키지": package_name,
         "WBOM 구분": "작업 지원",
         "품목코드": f"{mbom_row['품목코드']}-{item_code}",
         "품목명": item_name,
@@ -500,31 +769,35 @@ def _to_work_purpose(family_name: str) -> str:
 
 
 def _to_primary_work(package_name: str) -> str:
-    if package_name.endswith("-소조"):
+    if package_name == "파트":
+        return "파트 선별 및 소조 투입"
+    if package_name == "소조" or package_name.endswith("-소조"):
         return "소부재 조립"
-    if package_name.endswith("-중조"):
+    if package_name == "중조" or package_name.endswith("-중조"):
         return "중간 조립체 제작"
-    if package_name.endswith("-대조"):
+    if package_name == "대조" or package_name.endswith("-대조"):
         return "블록 최종 조립 및 검사"
     return "탑재 준비 및 현장 연계"
 
 
 def _to_preparation_items(package_name: str) -> str:
-    if package_name.endswith("-PE"):
+    if package_name == "PE" or package_name.endswith("-PE"):
         return "도장 완료 확인, 탑재 인터페이스 확인, 양중 계획 검토"
-    if package_name.endswith("-대조"):
+    if package_name == "대조" or package_name.endswith("-대조"):
         return "A/T, PT·MT·UT, 정도 확인, Final Inspection 준비"
-    if package_name.endswith("-중조"):
+    if package_name == "중조" or package_name.endswith("-중조"):
         return "치공구, 취부 지그, 중간 조립 자재 준비"
+    if package_name == "파트":
+        return "절단 자재, 부재 선별, 송선 투입 코드 확인"
     return "절단 자재, 소부재, 취부 지그 준비"
 
 
 def _to_work_team(package_name: str) -> str:
-    if package_name.endswith("-PE"):
+    if package_name == "PE" or package_name.endswith("-PE"):
         return "탑재생산팀"
-    if package_name.endswith("-대조"):
+    if package_name == "대조" or package_name.endswith("-대조"):
         return "블록생산팀"
-    if package_name.endswith("-중조"):
+    if package_name == "중조" or package_name.endswith("-중조"):
         return "중조립팀"
     return "소조립팀"
 

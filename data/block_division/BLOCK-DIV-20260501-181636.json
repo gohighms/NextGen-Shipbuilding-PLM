@@ -1,8 +1,8 @@
 {
-  "division_id": "BLOCK-DIV-20260420-225100",
-  "saved_at": "2026-04-20 22:51:00",
+  "division_id": "BLOCK-DIV-20260501-181636",
+  "saved_at": "2026-05-01 18:16:36",
   "project_name": "HD9001",
-  "source_model_draft_id": "MODEL-DRAFT-20260420-225017",
+  "source_model_draft_id": "MODEL-DRAFT-20260501-181631",
   "source_model_id": "MODEL-HD1001-001",
   "title": "HD9001 Block Division 초안",
   "logical_rows": [
@@ -63,37 +63,10 @@
     {
       "프로젝트": "HD9001",
       "논리 블록": "BLOCK-301",
-      "노드코드": "DECK-STRUCTURE",
-      "노드명": "갑판 구조",
-      "SFD 타입": "Surface Assembly",
-      "모델경로": "PROJECT/HD9001/HULL/DECK-STRUCTURE",
-      "분류 근거": "선체 기본 구조 기준"
-    },
-    {
-      "프로젝트": "HD9001",
-      "논리 블록": "BLOCK-301",
       "노드코드": "INTERNAL-STRUCTURE",
       "노드명": "내부 구조",
       "SFD 타입": "Surface Assembly",
       "모델경로": "PROJECT/HD9001/HULL/INTERNAL-STRUCTURE",
-      "분류 근거": "선체 기본 구조 기준"
-    },
-    {
-      "프로젝트": "HD9001",
-      "논리 블록": "BLOCK-301",
-      "노드코드": "MAIN-DECK",
-      "노드명": "상갑판",
-      "SFD 타입": "Surface Assembly",
-      "모델경로": "PROJECT/HD9001/HULL/DECK-STRUCTURE/MAIN-DECK",
-      "분류 근거": "선체 기본 구조 기준"
-    },
-    {
-      "프로젝트": "HD9001",
-      "논리 블록": "BLOCK-301",
-      "노드코드": "PLATE-MD-001",
-      "노드명": "상갑판 001",
-      "SFD 타입": "Surface 플레이트",
-      "모델경로": "PROJECT/HD9001/HULL/DECK-STRUCTURE/MAIN-DECK/PLATE-MD-001",
       "분류 근거": "선체 기본 구조 기준"
     },
     {
@@ -152,29 +125,8 @@
     {
       "프로젝트": "HD9001",
       "SDD 블록": "BLOCK-301",
-      "솔리드 모델명": "BLOCK-301-DECK-STRUCTURE",
-      "기준 항목": "갑판 구조",
-      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
-    },
-    {
-      "프로젝트": "HD9001",
-      "SDD 블록": "BLOCK-301",
       "솔리드 모델명": "BLOCK-301-INTERNAL-STRUCTURE",
       "기준 항목": "내부 구조",
-      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
-    },
-    {
-      "프로젝트": "HD9001",
-      "SDD 블록": "BLOCK-301",
-      "솔리드 모델명": "BLOCK-301-MAIN-DECK",
-      "기준 항목": "상갑판",
-      "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
-    },
-    {
-      "프로젝트": "HD9001",
-      "SDD 블록": "BLOCK-301",
-      "솔리드 모델명": "BLOCK-301-PLATE-MD-001",
-      "기준 항목": "상갑판 001",
       "변환 개념": "SFD surface 기준 형상을 바탕으로 solid volume model 구성"
     },
     {
@@ -203,7 +155,7 @@
     },
     {
       "논리 블록": "BLOCK-301",
-      "포함 항목 수": 5,
+      "포함 항목 수": 2,
       "다음 단계": "SDD solid block model 구성"
     }
   ]

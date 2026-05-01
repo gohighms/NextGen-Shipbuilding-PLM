@@ -94,7 +94,7 @@ def render_block_division_page() -> None:
 
 def render_mbom_page() -> None:
     st.title("생산 BOM 구축")
-    st.caption("Block Division 이후, 선체와 의장 모델이 블록 기준으로 정리되었다고 가정하고, MBOM view를 구성합니다.")
+    st.caption("모델 파트를 소조→중조→대조→PE→선박 흐름으로 군집화하고, 송선코드가 포함된 MBOM view를 구성합니다.")
 
     block_division_repository = BlockDivisionRepository(BLOCK_DIVISION_DIR)
     model_draft_repository = ModelDraftRepository(MODEL_DRAFT_DIR)
@@ -149,8 +149,9 @@ def render_mbom_page() -> None:
     st.divider()
     st.subheader("2. MBOM view")
     st.write(f"- MBOM 품목 수: `{len(mbom_rows)}`")
-    st.write(f"- 블록 수: `{len({row['블록'] for row in mbom_rows})}`")
-    st.write("- 표시 범위: `소조 / 중조 / 대조 / PE`")
+    st.write(f"- 대조 블록 수: `{len({row['대조블록'] for row in mbom_rows if row['대조블록']})}`")
+    st.write(f"- PE 블록 수: `{len({row['PE블록'] for row in mbom_rows if row['PE블록']})}`")
+    st.write("- 표시 범위: `파트 / 소조 / 중조 / 대조 / PE / 탑재`")
     if st.button("MBOM 초안 저장", type="primary", use_container_width=True):
         payload = {
             "project_name": selected_item["project_name"],
@@ -162,39 +163,63 @@ def render_mbom_page() -> None:
         saved_path = mbom_repository.save(payload)
         st.success(f"MBOM 초안을 저장했습니다. `{saved_path.name}`")
 
-    st.markdown("#### MBOM 클러스터 View")
-    filter_col1, filter_col2, filter_col3 = st.columns(3)
-    all_blocks = ["전체"] + sorted({row["블록"] for row in mbom_rows})
-    all_stages = ["전체"] + ["소조", "중조", "대조", "PE"]
+    st.markdown("#### MBOM 조립 Flow")
+    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
+    all_blocks = ["전체"] + sorted({row["대조블록"] for row in mbom_rows if row["대조블록"]})
+    all_stages = ["전체"] + ["파트", "소조", "중조", "대조", "PE", "탑재"]
     all_structures = ["전체"] + sorted({row["설계구조"] for row in mbom_rows})
+    all_send_to = ["전체"] + sorted({row["송선To"] for row in mbom_rows if row["송선To"]})
     with filter_col1:
-        selected_block = st.selectbox("Block 필터", options=all_blocks)
+        selected_block = st.selectbox("대조블록 필터", options=all_blocks)
     with filter_col2:
         selected_stage = st.selectbox("조립단계 필터", options=all_stages)
     with filter_col3:
         selected_structure = st.selectbox("설계구조 필터", options=all_structures)
+    with filter_col4:
+        selected_send_to = st.selectbox("송선To 필터", options=all_send_to)
 
     filtered_mbom_rows = _filter_mbom_rows(
         mbom_rows,
         selected_block=selected_block,
         selected_stage=selected_stage,
         selected_structure=selected_structure,
+        selected_send_to=selected_send_to,
     )
-    st.caption("모델 구조를 Block, 조립단계, 설계구조 기준으로 다시 묶어 보는 MBOM 그리드 view입니다.")
+    st.caption("왼쪽의 모델 파트가 소조·중조·대조를 거쳐 PE 또는 선박 탑재 단계로 이어지는 흐름입니다.")
+    st.altair_chart(_build_mbom_assembly_flow_chart(filtered_mbom_rows), use_container_width=True)
 
-    cluster_view_df = (
-        pd.DataFrame(filtered_mbom_rows)
-        .rename(
-            columns={
-                "MBOM 단계": "조립단계",
-                "원천 모델": "모델ID",
-                "품목명": "모델명",
-                "품목군": "모델타입",
-            }
+    st.markdown("#### MBOM 상세 그리드")
+    grid_columns = [
+        "조립레벨",
+        "조립단계",
+        "품목코드",
+        "모델명",
+        "상위품목코드",
+        "소조블록",
+        "중조블록",
+        "대조블록",
+        "PE블록",
+        "송선코드",
+        "모델ID",
+        "모델타입",
+    ]
+    cluster_view_df = pd.DataFrame(filtered_mbom_rows)
+    if cluster_view_df.empty:
+        cluster_view_df = pd.DataFrame(columns=grid_columns)
+    else:
+        cluster_view_df = (
+            cluster_view_df
+            .rename(
+                columns={
+                    "MBOM 단계": "조립단계",
+                    "원천 모델": "모델ID",
+                    "품목명": "모델명",
+                    "품목군": "모델타입",
+                }
+            )
+            .loc[:, grid_columns]
+            .sort_values(by=["대조블록", "PE블록", "조립레벨", "품목코드"], kind="stable")
         )
-        .loc[:, ["블록", "조립단계", "설계구조", "모델ID", "모델명", "모델타입"]]
-        .sort_values(by=["블록", "조립단계", "설계구조", "모델ID"], kind="stable")
-    )
     block_palette = [
         "#fff7ed",
         "#fefce8",
@@ -209,14 +234,14 @@ def render_mbom_page() -> None:
     ]
     block_colors = {
         block_name: block_palette[index % len(block_palette)]
-        for index, block_name in enumerate(cluster_view_df["블록"].drop_duplicates().tolist())
+        for index, block_name in enumerate(cluster_view_df["대조블록"].drop_duplicates().tolist())
     }
 
     def _highlight_block_rows(row: pd.Series) -> list[str]:
-        background = block_colors.get(row["블록"], "#ffffff")
+        background = block_colors.get(row["대조블록"], "#ffffff")
         return [f"background-color: {background}; color: #111827;" for _ in row]
 
-    st.table(cluster_view_df.style.apply(_highlight_block_rows, axis=1))
+    st.dataframe(cluster_view_df.style.apply(_highlight_block_rows, axis=1), use_container_width=True, hide_index=True, height=360)
 
     st.divider()
     _render_saved_mbom(mbom_repository, selected_item["project_name"])
@@ -243,7 +268,7 @@ def render_wbom_page() -> None:
             if item["mbom_id"] == mbom_id
         ),
     )
-    selected_item = next(item for item in mbom_items if item["mbom_id"] == selected_mbom_id)
+    selected_item = _with_mbom_display_defaults(next(item for item in mbom_items if item["mbom_id"] == selected_mbom_id))
 
     st.subheader("현재 연결 기준")
     top_col1, top_col2 = st.columns([1, 1])
@@ -266,10 +291,10 @@ def render_wbom_page() -> None:
                 "품목군": "모델타입",
             }
         )
-        .loc[:, ["블록", "조립단계", "설계구조", "모델ID", "모델명", "모델타입"]]
-        .sort_values(by=["블록", "조립단계", "설계구조", "모델ID"], kind="stable")
+        .loc[:, ["조립레벨", "조립단계", "품목코드", "상위품목코드", "대조블록", "PE블록", "송선코드", "모델ID", "모델명"]]
+        .sort_values(by=["대조블록", "PE블록", "조립레벨", "품목코드"], kind="stable")
     )
-    st.caption("WBOM은 MBOM을 기준으로 작업 지원 항목이 추가된 view입니다.")
+    st.caption("WBOM은 MBOM의 조립 계층과 송선 흐름을 유지한 상태에서 작업 지원 항목이 추가된 view입니다.")
     st.table(mbom_link_df)
 
     st.divider()
@@ -291,23 +316,26 @@ def render_wbom_page() -> None:
         saved_path = wbom_repository.save(payload)
         st.success(f"WBOM 초안을 저장했습니다. `{saved_path.name}`")
 
-    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
-    all_blocks = ["전체"] + sorted({row["블록"] for row in wbom_rows})
+    filter_col1, filter_col2, filter_col3, filter_col4, filter_col5 = st.columns(5)
+    all_blocks = ["전체"] + sorted({row["대조블록"] for row in wbom_rows if row["대조블록"]})
     all_stages = ["전체"] + sorted({row["조립단계"] for row in wbom_rows})
     all_structures = ["전체"] + sorted({row["설계구조"] for row in wbom_rows})
     all_divisions = ["전체"] + sorted({row["WBOM 구분"] for row in wbom_rows})
+    all_send_to = ["전체"] + sorted({row["송선To"] for row in wbom_rows if row["송선To"]})
     with filter_col1:
-        selected_block = st.selectbox("Block 필터", options=all_blocks, key="wbom_block")
+        selected_block = st.selectbox("대조블록 필터", options=all_blocks, key="wbom_block")
     with filter_col2:
         selected_stage = st.selectbox("조립단계 필터", options=all_stages, key="wbom_stage")
     with filter_col3:
         selected_structure = st.selectbox("설계구조 필터", options=all_structures, key="wbom_structure")
     with filter_col4:
         selected_division = st.selectbox("WBOM 구분 필터", options=all_divisions, key="wbom_division")
+    with filter_col5:
+        selected_send_to = st.selectbox("송선To 필터", options=all_send_to, key="wbom_send_to")
 
     filtered_wbom_rows = []
     for row in wbom_rows:
-        if selected_block != "전체" and row["블록"] != selected_block:
+        if selected_block != "전체" and row["대조블록"] != selected_block:
             continue
         if selected_stage != "전체" and row["조립단계"] != selected_stage:
             continue
@@ -315,15 +343,32 @@ def render_wbom_page() -> None:
             continue
         if selected_division != "전체" and row["WBOM 구분"] != selected_division:
             continue
+        if selected_send_to != "전체" and row["송선To"] != selected_send_to:
+            continue
         filtered_wbom_rows.append(row)
 
     wbom_view_df = (
         pd.DataFrame(filtered_wbom_rows)
-        .loc[:, ["블록", "조립단계", "설계구조", "WBOM 구분", "모델ID", "품목명", "모델타입", "작업 목적"]]
+        .loc[
+            :,
+            [
+                "조립레벨",
+                "조립단계",
+                "대조블록",
+                "PE블록",
+                "송선코드",
+                "WBOM 구분",
+                "작업 패키지",
+                "품목코드",
+                "품목명",
+                "모델타입",
+                "작업 목적",
+            ],
+        ]
         .rename(columns={"품목명": "모델명"})
-        .sort_values(by=["블록", "조립단계", "설계구조", "WBOM 구분", "모델ID"], kind="stable")
+        .sort_values(by=["대조블록", "PE블록", "조립단계", "WBOM 구분", "품목코드"], kind="stable")
     )
-    st.caption("MBOM 클러스터 View를 기준으로 WBOM 구성 요소와 작업 지원 항목을 함께 보는 화면입니다.")
+    st.caption("MBOM 조립 계층과 송선 단위별로 본체 작업 및 작업 지원 항목을 함께 보는 화면입니다.")
     st.dataframe(wbom_view_df, use_container_width=True, hide_index=True, height=520)
 
     st.divider()
@@ -351,7 +396,7 @@ def render_work_instruction_page() -> None:
             if item["wbom_id"] == wbom_id
         ),
     )
-    selected_item = next(item for item in wbom_items if item["wbom_id"] == selected_wbom_id)
+    selected_item = _with_wbom_display_defaults(next(item for item in wbom_items if item["wbom_id"] == selected_wbom_id))
 
     instruction_rows = build_work_instruction_rows(selected_item)
     summary_rows = build_work_instruction_summary_rows(instruction_rows)
@@ -369,11 +414,11 @@ def render_work_instruction_page() -> None:
     st.subheader("1. WBOM과의 연결")
     wbom_link_df = (
         pd.DataFrame(selected_item["wbom_rows"])
-        .loc[:, ["블록", "조립단계", "설계구조", "WBOM 구분", "모델ID", "품목명", "모델타입", "작업 목적"]]
+        .loc[:, ["조립레벨", "조립단계", "대조블록", "PE블록", "송선코드", "WBOM 구분", "모델ID", "품목명", "모델타입", "작업 목적"]]
         .rename(columns={"품목명": "모델명"})
-        .sort_values(by=["블록", "조립단계", "설계구조", "WBOM 구분", "모델ID"], kind="stable")
+        .sort_values(by=["대조블록", "PE블록", "조립단계", "WBOM 구분", "모델ID"], kind="stable")
     )
-    st.caption("작업지시서는 WBOM 작업 패키지를 기준으로 생성되는 실행 view입니다.")
+    st.caption("작업지시서는 WBOM 작업 패키지와 송선 단위를 기준으로 생성되는 실행 view입니다.")
     st.table(wbom_link_df)
 
     st.divider()
@@ -391,16 +436,19 @@ def render_work_instruction_page() -> None:
         saved_path = instruction_repository.save(payload)
         st.success(f"작업지시서 초안을 저장했습니다. `{saved_path.name}`")
 
-    filter_col1, filter_col2, filter_col3 = st.columns(3)
+    filter_col1, filter_col2, filter_col3, filter_col4 = st.columns(4)
     all_blocks = ["전체"] + sorted({row["블록"] for row in instruction_rows})
     all_stages = ["전체"] + sorted({row["조립단계"] for row in instruction_rows})
     all_teams = ["전체"] + sorted({row["담당 조직"] for row in instruction_rows})
+    all_send_to = ["전체"] + sorted({row["송선To"] for row in instruction_rows if row["송선To"]})
     with filter_col1:
-        selected_block = st.selectbox("Block 필터", options=all_blocks, key="wi_block")
+        selected_block = st.selectbox("대조블록 필터", options=all_blocks, key="wi_block")
     with filter_col2:
         selected_stage = st.selectbox("조립단계 필터", options=all_stages, key="wi_stage")
     with filter_col3:
         selected_team = st.selectbox("담당조직 필터", options=all_teams, key="wi_team")
+    with filter_col4:
+        selected_send_to = st.selectbox("송선To 필터", options=all_send_to, key="wi_send_to")
 
     filtered_instruction_rows = []
     for row in instruction_rows:
@@ -410,12 +458,14 @@ def render_work_instruction_page() -> None:
             continue
         if selected_team != "전체" and row["담당 조직"] != selected_team:
             continue
+        if selected_send_to != "전체" and row["송선To"] != selected_send_to:
+            continue
         filtered_instruction_rows.append(row)
 
     instruction_view_df = (
         pd.DataFrame(filtered_instruction_rows)
-        .loc[:, ["블록", "조립단계", "작업 패키지", "주 작업", "준비 항목", "담당 조직"]]
-        .sort_values(by=["블록", "조립단계", "작업 패키지"], kind="stable")
+        .loc[:, ["블록", "조립단계", "송선코드", "송선From", "송선To", "작업 패키지", "주 작업", "준비 항목", "담당 조직"]]
+        .sort_values(by=["블록", "조립단계", "송선코드", "작업 패키지"], kind="stable")
     )
     st.dataframe(instruction_view_df, use_container_width=True, hide_index=True, height=520)
 
@@ -560,6 +610,74 @@ def _render_saved_work_instructions(repository: WorkInstructionRepository, proje
     st.dataframe(pd.DataFrame(selected_item["instruction_rows"]), use_container_width=True, hide_index=True, height=520)
 
 
+def _with_mbom_display_defaults(item: dict) -> dict:
+    normalized = dict(item)
+    normalized["mbom_rows"] = [_mbom_row_with_display_defaults(row) for row in item.get("mbom_rows", [])]
+    return normalized
+
+
+def _mbom_row_with_display_defaults(row: dict) -> dict:
+    normalized = dict(row)
+    stage_name = normalized.get("MBOM 단계", "")
+    block_code = normalized.get("블록", "")
+    item_code = normalized.get("품목코드", "")
+    send_code = normalized.get("송선코드", "")
+    send_from, send_to = _split_send_code(send_code)
+    normalized.setdefault("조립레벨", _assembly_level_from_stage(stage_name))
+    normalized.setdefault("상위품목코드", "")
+    normalized.setdefault("소조블록", item_code if stage_name == "소조" else "")
+    normalized.setdefault("중조블록", item_code if stage_name == "중조" else "")
+    normalized.setdefault("대조블록", block_code)
+    normalized.setdefault("PE블록", "")
+    normalized.setdefault("송선코드", send_code)
+    normalized.setdefault("송선From", send_from)
+    normalized.setdefault("송선To", send_to)
+    return normalized
+
+
+def _with_wbom_display_defaults(item: dict) -> dict:
+    normalized = dict(item)
+    normalized["wbom_rows"] = [_wbom_row_with_display_defaults(row) for row in item.get("wbom_rows", [])]
+    return normalized
+
+
+def _wbom_row_with_display_defaults(row: dict) -> dict:
+    normalized = dict(row)
+    stage_name = normalized.get("조립단계", "")
+    block_code = normalized.get("블록", "")
+    send_code = normalized.get("송선코드", "")
+    send_from, send_to = _split_send_code(send_code)
+    normalized.setdefault("조립레벨", _assembly_level_from_stage(stage_name))
+    normalized.setdefault("상위품목코드", "")
+    normalized.setdefault("소조블록", normalized.get("품목코드", "") if stage_name == "소조" else "")
+    normalized.setdefault("중조블록", normalized.get("품목코드", "") if stage_name == "중조" else "")
+    normalized.setdefault("대조블록", block_code)
+    normalized.setdefault("PE블록", "")
+    normalized.setdefault("송선코드", send_code)
+    normalized.setdefault("송선From", send_from)
+    normalized.setdefault("송선To", send_to)
+    return normalized
+
+
+def _assembly_level_from_stage(stage_name: str) -> str:
+    mapping = {
+        "파트": "PART",
+        "소조": "SUB_BLOCK",
+        "중조": "MID_BLOCK",
+        "대조": "GRAND_BLOCK",
+        "PE": "PE_BLOCK",
+        "탑재": "SHIP",
+    }
+    return mapping.get(stage_name, "")
+
+
+def _split_send_code(send_code: str) -> tuple[str, str]:
+    if "-" not in send_code:
+        return send_code, send_code
+    send_from, send_to = send_code.split("-", 1)
+    return send_from, send_to
+
+
 def _build_block_division_graph(block_item: dict) -> alt.Chart:
     logical_rows = block_item.get("logical_rows", [])
     sdd_rows = block_item.get("sdd_rows", [])
@@ -607,13 +725,13 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
     edge_rows = []
     for row in graph_rows:
         edge_rows.append(
-            {"x": 0.0, "y": row["y_pos"], "x2": 1.0, "y2": row["y_pos"], "edge_type": "surface_to_solid"}
+            {"x": 0.0, "y": row["y_pos"], "x2": 0.78, "y2": row["y_pos"], "edge_type": "surface_to_solid"}
         )
         edge_rows.append(
             {
-                "x": 1.0,
+                "x": 0.78,
                 "y": row["y_pos"],
-                "x2": 2.0,
+                "x2": 1.56,
                 "y2": block_positions[row["block_code"]],
                 "edge_type": "solid_to_block",
             }
@@ -624,7 +742,7 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
             {
                 "x": 0.0,
                 "y": row["y_pos"],
-                "label": row["surface_id"],
+                "label": _short_label(row["surface_id"], 14),
                 "group": "Surface Model",
                 "detail_id": row["surface_id"],
                 "detail_name": row["surface_name"],
@@ -637,9 +755,9 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
     solid_nodes = pd.DataFrame(
         [
             {
-                "x": 1.0,
+                "x": 0.78,
                 "y": row["y_pos"],
-                "label": row["solid_id"],
+                "label": _short_label(row["solid_id"], 14),
                 "group": "Solid Model",
                 "detail_id": row["solid_id"],
                 "detail_name": row["surface_name"],
@@ -652,9 +770,9 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
     block_nodes = pd.DataFrame(
         [
             {
-                "x": 2.0,
+                "x": 1.56,
                 "y": y_pos,
-                "label": block_code,
+                "label": _short_label(block_code, 14),
                 "group": "Block",
                 "detail_id": block_code,
                 "detail_name": block_code,
@@ -671,7 +789,7 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
         alt.Chart(edge_df)
         .mark_rule(color="#595d61", strokeWidth=2)
         .encode(
-            x=alt.X("x:Q", axis=alt.Axis(values=[0, 1, 2], labelAngle=0, title=None, labels=False, ticks=False)),
+            x=alt.X("x:Q", axis=alt.Axis(values=[0, 0.78, 1.56], labelAngle=0, title=None, labels=False, ticks=False), scale=alt.Scale(domain=[-0.22, 1.78])),
             y=alt.Y("y:Q", axis=None),
             x2="x2:Q",
             y2="y2:Q",
@@ -680,9 +798,9 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
 
     node_layer = (
         alt.Chart(node_df)
-        .mark_circle(size=900, stroke="white", strokeWidth=2)
+        .mark_rect(width=150, height=44, cornerRadius=4, stroke="white", strokeWidth=1.5)
         .encode(
-            x=alt.X("x:Q", axis=alt.Axis(values=[0, 1, 2], labelAngle=0, title=None, labels=False, ticks=False)),
+            x=alt.X("x:Q", axis=alt.Axis(values=[0, 0.78, 1.56], labelAngle=0, title=None, labels=False, ticks=False), scale=alt.Scale(domain=[-0.22, 1.78])),
             y=alt.Y("y:Q", axis=None),
             color=alt.Color(
                 "group:N",
@@ -704,7 +822,7 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
 
     text_layer = (
         alt.Chart(node_df)
-        .mark_text(color="gray", fontSize=10, fontWeight="bold")
+        .mark_text(color="white", fontSize=13, fontWeight="bold")
         .encode(
             x="x:Q",
             y="y:Q",
@@ -715,8 +833,8 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
     header_df = pd.DataFrame(
         [
             {"x": 0.0, "y": 1.5, "title": "SDD (Surface model)"},
-            {"x": 1.0, "y": 1.5, "title": "SFD (Solid model)"},
-            {"x": 2.0, "y": 1.1, "title": "Block"},
+            {"x": 0.78, "y": 1.5, "title": "SFD (Solid model)"},
+            {"x": 1.56, "y": 1.1, "title": "Block"},
         ]
     )
     header_layer = (
@@ -725,7 +843,7 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
         .encode(x="x:Q", y="y:Q", text="title:N")
     )
 
-    return (edge_layer + node_layer + text_layer + header_layer).properties(height=max(420, 160 + len(graph_rows) * 44))
+    return (edge_layer + node_layer + text_layer + header_layer).properties(height=max(460, 180 + len(graph_rows) * 50))
 
 
 def _filter_mbom_rows(
@@ -733,17 +851,206 @@ def _filter_mbom_rows(
     selected_block: str,
     selected_stage: str,
     selected_structure: str,
+    selected_send_to: str,
 ) -> list[dict]:
     filtered_rows = []
     for row in mbom_rows:
-        if selected_block != "전체" and row["블록"] != selected_block:
+        if selected_block != "전체" and row["대조블록"] != selected_block:
             continue
         if selected_stage != "전체" and row["MBOM 단계"] != selected_stage:
             continue
         if selected_structure != "전체" and row["설계구조"] != selected_structure:
             continue
+        if selected_send_to != "전체" and row["송선To"] != selected_send_to:
+            continue
         filtered_rows.append(row)
     return filtered_rows
+
+
+def _build_mbom_assembly_flow_chart(mbom_rows: list[dict]) -> alt.Chart:
+    if not mbom_rows:
+        empty_df = pd.DataFrame([{"x": 2.5, "y": 0, "label": "데이터 없음"}])
+        return alt.Chart(empty_df).mark_text(fontSize=14, color="#64748b").encode(x="x:Q", y="y:Q", text="label:N")
+
+    level_x = {
+        "PART": 0.0,
+        "SUB_BLOCK": 0.95,
+        "MID_BLOCK": 1.9,
+        "GRAND_BLOCK": 2.85,
+        "PE_BLOCK": 3.8,
+        "SHIP": 4.75,
+    }
+    level_label = {
+        "PART": "파트",
+        "SUB_BLOCK": "소조",
+        "MID_BLOCK": "중조",
+        "GRAND_BLOCK": "대조",
+        "PE_BLOCK": "PE",
+        "SHIP": "선박",
+    }
+    level_order = {level: index for index, level in enumerate(level_x)}
+    display_rows = [row for row in mbom_rows if row.get("조립레벨") in level_x]
+    item_lookup = {row["품목코드"]: row for row in display_rows}
+    if not display_rows:
+        empty_df = pd.DataFrame([{"x": 2.5, "y": 0, "label": "데이터 없음"}])
+        return alt.Chart(empty_df).mark_text(fontSize=14, color="#64748b").encode(x="x:Q", y="y:Q", text="label:N")
+
+    terminal_order = _mbom_terminal_order(display_rows)
+    level_offsets: dict[tuple[str, str], int] = {}
+    node_rows = []
+    for row in sorted(
+        display_rows,
+        key=lambda item: (
+            terminal_order.get(_mbom_terminal_group(item), 999),
+            level_order.get(item["조립레벨"], 9),
+            item["품목코드"],
+        ),
+    ):
+        terminal = _mbom_terminal_group(row)
+        offset_key = (terminal, row["조립레벨"])
+        item_index = level_offsets.get(offset_key, 0)
+        level_offsets[offset_key] = item_index + 1
+        y_pos = -(terminal_order.get(terminal, 999) * 5.2 + item_index * 0.7)
+        node_rows.append(
+            {
+                "item_code": row["품목코드"],
+                "x": level_x[row["조립레벨"]],
+                "y": y_pos,
+                "label": _flow_node_label(row),
+                "level": row["조립레벨"],
+                "level_label": level_label[row["조립레벨"]],
+                "item_name": row.get("품목명", ""),
+                "parent_code": row.get("상위품목코드", ""),
+                "send_code": row.get("송선코드", ""),
+                "terminal": terminal,
+                "detail": _flow_node_detail(row),
+            }
+        )
+
+    node_lookup = {row["item_code"]: row for row in node_rows}
+    edge_rows = []
+    for row in node_rows:
+        parent_code = row["parent_code"]
+        if not parent_code or parent_code not in node_lookup:
+            continue
+        parent = node_lookup[parent_code]
+        edge_rows.append(
+            {
+                "x": row["x"],
+                "y": row["y"],
+                "x2": parent["x"],
+                "y2": parent["y"],
+                "send_code": row["send_code"],
+            }
+        )
+
+    edge_df = pd.DataFrame(edge_rows, columns=["x", "y", "x2", "y2", "send_code"])
+    edge_layer = (
+        alt.Chart(edge_df)
+        .mark_rule(color="#94a3b8", strokeWidth=1.6)
+        .encode(
+            x=alt.X(
+                "x:Q",
+                axis=alt.Axis(values=list(level_x.values()), labels=False, ticks=False, title=None),
+                scale=alt.Scale(domain=[-0.34, 5.09]),
+            ),
+            y=alt.Y("y:Q", axis=None),
+            x2="x2:Q",
+            y2="y2:Q",
+            tooltip=[alt.Tooltip("send_code:N", title="송선코드")],
+        )
+    )
+
+    node_df = pd.DataFrame(node_rows)
+    node_layer = (
+        alt.Chart(node_df)
+        .mark_rect(width=142, height=44, cornerRadius=4, stroke="white", strokeWidth=1.5)
+        .encode(
+            x=alt.X(
+                "x:Q",
+                axis=alt.Axis(values=list(level_x.values()), labels=False, ticks=False, title=None),
+                scale=alt.Scale(domain=[-0.34, 5.09]),
+            ),
+            y=alt.Y("y:Q", axis=None),
+            color=alt.Color(
+                "level_label:N",
+                scale=alt.Scale(
+                    domain=["파트", "소조", "중조", "대조", "PE", "선박"],
+                    range=["#64748b", "#0f766e", "#2563eb", "#7c3aed", "#b45309", "#334155"],
+                ),
+                legend=None,
+            ),
+            tooltip=[
+                alt.Tooltip("level_label:N", title="구분"),
+                alt.Tooltip("item_name:N", title="모델/블록명"),
+                alt.Tooltip("item_code:N", title="품목코드"),
+                alt.Tooltip("send_code:N", title="송선코드"),
+                alt.Tooltip("parent_code:N", title="상위품목"),
+            ],
+        )
+    )
+    text_layer = (
+        alt.Chart(node_df)
+        .mark_text(color="white", fontSize=12, fontWeight="bold")
+        .encode(x="x:Q", y="y:Q", text="label:N")
+    )
+
+    header_df = pd.DataFrame(
+        [
+            {"x": x_pos, "y": 1.2, "title": title}
+            for title, x_pos in [
+                ("파트", 0.0),
+                ("소조", 0.95),
+                ("중조", 1.9),
+                ("대조", 2.85),
+                ("PE", 3.8),
+                ("선박", 4.75),
+            ]
+        ]
+    )
+    header_layer = (
+        alt.Chart(header_df)
+        .mark_text(fontSize=12, fontWeight="bold", color="#334155")
+        .encode(x="x:Q", y="y:Q", text="title:N")
+    )
+
+    return (edge_layer + node_layer + text_layer + header_layer).properties(height=max(500, 220 + len(terminal_order) * 140))
+
+
+def _mbom_terminal_order(rows: list[dict]) -> dict[str, int]:
+    terminals = sorted({_mbom_terminal_group(row) for row in rows})
+    return {terminal: index for index, terminal in enumerate(terminals)}
+
+
+def _mbom_terminal_group(row: dict) -> str:
+    if row.get("PE블록"):
+        return f"PE-{row['PE블록']}"
+    if row.get("대조블록"):
+        return row["대조블록"]
+    return "SHIP"
+
+
+def _flow_node_label(row: dict) -> str:
+    if row.get("조립레벨") == "PART":
+        return _short_label(row.get("원천 모델") or row.get("품목명", ""), 10)
+    if row.get("조립레벨") == "PE_BLOCK":
+        return _short_label(row.get("PE블록") or row.get("품목코드", ""), 10)
+    if row.get("조립레벨") == "SHIP":
+        return "SHIP"
+    return _short_label(row.get("품목코드", ""), 12)
+
+
+def _flow_node_detail(row: dict) -> str:
+    name = row.get("품목명", "")
+    send_code = row.get("송선코드", "")
+    return f"{name} / {send_code}" if send_code else name
+
+
+def _short_label(value: str, max_length: int) -> str:
+    value = str(value)
+    if len(value) <= max_length:
+        return value
+    return f"{value[: max_length - 1]}…"
 
 
 def _build_mbom_cluster_chart(mbom_rows: list[dict]) -> alt.Chart:
@@ -867,7 +1174,7 @@ def _build_mbom_cluster_chart(mbom_rows: list[dict]) -> alt.Chart:
 
     node_layer = (
         alt.Chart(node_df)
-        .mark_circle(size=850, stroke="white", strokeWidth=2)
+        .mark_rect(width=112, height=32, cornerRadius=4, stroke="white", strokeWidth=1.5)
         .encode(
             x=alt.X("x:Q", axis=alt.Axis(values=[0, 1, 2, 3], labels=False, ticks=False, title=None)),
             y=alt.Y("y:Q", axis=None),
