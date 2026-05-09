@@ -500,7 +500,7 @@ def _render_saved_block_divisions(repository: BlockDivisionRepository, project_n
         ),
     )
     selected_item = next(item for item in items if item["division_id"] == selected_id)
-    st.markdown("#### Surface Model → Solid Model → Block")
+    st.markdown("#### SFD Surface Model → Logical Block → SDD Solid Model")
     st.caption("노드 위에 마우스를 올리면 상세 정보를 볼 수 있습니다.")
     st.altair_chart(_build_block_division_graph(selected_item), use_container_width=True)
 
@@ -725,15 +725,21 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
     edge_rows = []
     for row in graph_rows:
         edge_rows.append(
-            {"x": 0.0, "y": row["y_pos"], "x2": 0.78, "y2": row["y_pos"], "edge_type": "surface_to_solid"}
+            {
+                "x": 0.0,
+                "y": row["y_pos"],
+                "x2": 0.78,
+                "y2": block_positions[row["block_code"]],
+                "edge_type": "surface_to_block",
+            }
         )
         edge_rows.append(
             {
                 "x": 0.78,
-                "y": row["y_pos"],
+                "y": block_positions[row["block_code"]],
                 "x2": 1.56,
-                "y2": block_positions[row["block_code"]],
-                "edge_type": "solid_to_block",
+                "y2": row["y_pos"],
+                "edge_type": "block_to_solid",
             }
         )
 
@@ -743,7 +749,7 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
                 "x": 0.0,
                 "y": row["y_pos"],
                 "label": _short_label(row["surface_id"], 14),
-                "group": "Surface Model",
+                "group": "SFD Surface Model",
                 "detail_id": row["surface_id"],
                 "detail_name": row["surface_name"],
                 "detail_type": row["surface_type"],
@@ -755,13 +761,13 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
     solid_nodes = pd.DataFrame(
         [
             {
-                "x": 0.78,
+                "x": 1.56,
                 "y": row["y_pos"],
                 "label": _short_label(row["solid_id"], 14),
-                "group": "Solid Model",
+                "group": "SDD Solid Model",
                 "detail_id": row["solid_id"],
                 "detail_name": row["surface_name"],
-                "detail_type": "Solid Model",
+                "detail_type": "SDD Solid Model",
                 "detail_extra": row["reason_text"],
             }
             for row in graph_rows
@@ -770,13 +776,13 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
     block_nodes = pd.DataFrame(
         [
             {
-                "x": 1.56,
+                "x": 0.78,
                 "y": y_pos,
                 "label": _short_label(block_code, 14),
-                "group": "Block",
+                "group": "Logical Block",
                 "detail_id": block_code,
                 "detail_name": block_code,
-                "detail_type": "Block",
+                "detail_type": "Logical Block",
                 "detail_extra": f"포함 모델 수 {len([row for row in graph_rows if row['block_code'] == block_code])}",
             }
             for block_code, y_pos in block_positions.items()
@@ -805,8 +811,8 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
             color=alt.Color(
                 "group:N",
                 scale=alt.Scale(
-                    domain=["Surface Model", "Solid Model", "Block"],
-                    range=["#2563eb", "#f59e0b", "#10b981"],
+                    domain=["SFD Surface Model", "Logical Block", "SDD Solid Model"],
+                    range=["#2563eb", "#10b981", "#f59e0b"],
                 ),
                 legend=None,
             ),
@@ -832,9 +838,9 @@ def _build_block_division_graph(block_item: dict) -> alt.Chart:
 
     header_df = pd.DataFrame(
         [
-            {"x": 0.0, "y": 1.5, "title": "SDD (Surface model)"},
-            {"x": 0.78, "y": 1.5, "title": "SFD (Solid model)"},
-            {"x": 1.56, "y": 1.1, "title": "Block"},
+            {"x": 0.0, "y": 1.5, "title": "SFD (Surface model)"},
+            {"x": 0.78, "y": 1.5, "title": "Logical Block"},
+            {"x": 1.56, "y": 1.5, "title": "SDD (Solid model)"},
         ]
     )
     header_layer = (
